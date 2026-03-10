@@ -1,0 +1,6 @@
+services:
+  ingestion:
+    build: .
+    container_name: volttus-ingestion
+    env_file: .env
+    restart: "no"

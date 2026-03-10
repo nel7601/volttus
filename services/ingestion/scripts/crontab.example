@@ -1,0 +1,2 @@
+# Volttus ingestion - runs every 15 minutes
+*/15 * * * * cd /opt/volttus-ingestion && docker compose run --rm ingestion >> /var/log/volttus-ingestion.log 2>&1

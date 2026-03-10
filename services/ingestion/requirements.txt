@@ -1,0 +1,6 @@
+pyemvue
+psycopg2-binary
+pydantic
+pydantic-settings
+python-dotenv
+cryptography

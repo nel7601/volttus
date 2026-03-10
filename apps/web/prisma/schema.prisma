@@ -1,0 +1,262 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  LANDLORD
+  TENANT
+}
+
+enum GroupType {
+  INCOME
+  COMMON
+  APARTMENT
+}
+
+enum IngestionStatus {
+  RUNNING
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+enum TriggerType {
+  CRON
+  MANUAL
+  RETRY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  role         Role
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  landlord Landlord?
+  tenant   Tenant?
+
+  @@map("users")
+}
+
+model Landlord {
+  id          String   @id @default(cuid())
+  userId      String   @unique @map("user_id")
+  companyName String?  @map("company_name")
+  phone       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  properties Property[]
+
+  @@map("landlords")
+}
+
+model Tenant {
+  id               String    @id @default(cuid())
+  userId           String    @unique @map("user_id")
+  propertyId       String    @map("property_id")
+  apartmentGroupId String    @map("apartment_group_id")
+  leaseStartDate   DateTime? @map("lease_start_date")
+  leaseEndDate     DateTime? @map("lease_end_date")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property       Property     @relation(fields: [propertyId], references: [id])
+  apartmentGroup ChannelGroup @relation(fields: [apartmentGroupId], references: [id])
+
+  @@map("tenants")
+}
+
+model Property {
+  id            String   @id @default(cuid())
+  landlordId    String   @map("landlord_id")
+  propertyName  String   @map("property_name")
+  addressLine1  String   @map("address_line_1")
+  addressLine2  String?  @map("address_line_2")
+  city          String
+  provinceState String?  @map("province_state")
+  postalCode    String?  @map("postal_code")
+  country       String   @default("HR")
+  timezone      String   @default("Europe/Zagreb")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  landlord        Landlord         @relation(fields: [landlordId], references: [id])
+  emporiaAccount  EmporiaAccount?
+  devices         Device[]
+  channelGroups   ChannelGroup[]
+  channels        Channel[]
+  tenants         Tenant[]
+  measurements    Measurement[]
+  ingestionRuns   IngestionRun[]
+  ingestionErrors IngestionError[]
+
+  @@map("properties")
+}
+
+model EmporiaAccount {
+  id                String    @id @default(cuid())
+  propertyId        String    @unique @map("property_id")
+  accountEmail      String    @map("account_email")
+  encryptedPassword String    @map("encrypted_password")
+  status            String    @default("active")
+  lastLoginAt       DateTime? @map("last_login_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  devices  Device[]
+
+  @@map("emporia_accounts")
+}
+
+model Device {
+  id                   String    @id @default(cuid())
+  propertyId           String    @map("property_id")
+  emporiaAccountId     String    @map("emporia_account_id")
+  emporiaDeviceGid     Int       @unique @map("emporia_device_gid")
+  deviceName           String    @map("device_name")
+  serialNumber         String?   @map("serial_number")
+  channelCount         Int       @default(16) @map("channel_count")
+  isActive             Boolean   @default(true) @map("is_active")
+  lastSeenAt           DateTime? @map("last_seen_at")
+  lastSuccessfulSyncAt DateTime? @map("last_successful_sync_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  property       Property       @relation(fields: [propertyId], references: [id])
+  emporiaAccount EmporiaAccount @relation(fields: [emporiaAccountId], references: [id])
+  channels       Channel[]
+  measurements   Measurement[]
+  ingestionRuns  IngestionRun[]
+
+  @@map("devices")
+}
+
+model ChannelGroup {
+  id              String    @id @default(cuid())
+  propertyId      String    @map("property_id")
+  groupName       String    @map("group_name")
+  groupType       GroupType @map("group_type")
+  apartmentNumber String?   @map("apartment_number")
+  displayOrder    Int       @default(0) @map("display_order")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  property          Property           @relation(fields: [propertyId], references: [id])
+  channels          Channel[]
+  tenants           Tenant[]
+  groupMeasurements GroupMeasurement[]
+
+  @@map("channel_groups")
+}
+
+model Channel {
+  id               String   @id @default(cuid())
+  propertyId       String   @map("property_id")
+  deviceId         String   @map("device_id")
+  emporiaChannelId String   @map("emporia_channel_id")
+  channelNumber    Int      @map("channel_number")
+  rawName          String?  @map("raw_name")
+  displayName      String   @map("display_name")
+  assignedGroupId  String?  @map("assigned_group_id")
+  isMainChannel    Boolean  @default(false) @map("is_main_channel")
+  isEnabled        Boolean  @default(true) @map("is_enabled")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  property      Property      @relation(fields: [propertyId], references: [id])
+  device        Device        @relation(fields: [deviceId], references: [id])
+  assignedGroup ChannelGroup? @relation(fields: [assignedGroupId], references: [id])
+  measurements  Measurement[]
+
+  @@unique([deviceId, channelNumber])
+  @@map("channels")
+}
+
+model Measurement {
+  id            String   @id @default(cuid())
+  propertyId    String   @map("property_id")
+  deviceId      String   @map("device_id")
+  channelId     String   @map("channel_id")
+  measurementTs DateTime @map("measurement_ts")
+  watts         Float?
+  kwh           Float?
+  source        String   @default("emporia_poll")
+  ingestionRunId String? @map("ingestion_run_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  property     Property      @relation(fields: [propertyId], references: [id])
+  device       Device        @relation(fields: [deviceId], references: [id])
+  channel      Channel       @relation(fields: [channelId], references: [id])
+  ingestionRun IngestionRun? @relation(fields: [ingestionRunId], references: [id])
+
+  @@index([channelId, measurementTs(sort: Desc)])
+  @@index([deviceId, measurementTs(sort: Desc)])
+  @@index([propertyId, measurementTs(sort: Desc)])
+  @@map("measurements")
+}
+
+model GroupMeasurement {
+  id             String   @id @default(cuid())
+  propertyId     String   @map("property_id")
+  groupId        String   @map("group_id")
+  measurementTs  DateTime @map("measurement_ts")
+  totalWatts     Float?   @map("total_watts")
+  totalKwh       Float?   @map("total_kwh")
+  ingestionRunId String?  @map("ingestion_run_id")
+
+  group ChannelGroup @relation(fields: [groupId], references: [id])
+
+  @@index([groupId, measurementTs(sort: Desc)])
+  @@map("group_measurements")
+}
+
+model IngestionRun {
+  id              String          @id @default(cuid())
+  propertyId      String          @map("property_id")
+  deviceId        String          @map("device_id")
+  startedAt       DateTime        @map("started_at")
+  finishedAt      DateTime?       @map("finished_at")
+  status          IngestionStatus
+  recordsInserted Int             @default(0) @map("records_inserted")
+  recordsUpdated  Int             @default(0) @map("records_updated")
+  errorCount      Int             @default(0) @map("error_count")
+  triggerType     TriggerType     @map("trigger_type")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  property     Property         @relation(fields: [propertyId], references: [id])
+  device       Device           @relation(fields: [deviceId], references: [id])
+  measurements Measurement[]
+  errors       IngestionError[]
+
+  @@map("ingestion_runs")
+}
+
+model IngestionError {
+  id             String   @id @default(cuid())
+  ingestionRunId String   @map("ingestion_run_id")
+  propertyId     String   @map("property_id")
+  deviceId       String?  @map("device_id")
+  errorType      String   @map("error_type")
+  errorMessage   String   @map("error_message")
+  stackTrace     String?  @map("stack_trace")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  ingestionRun IngestionRun @relation(fields: [ingestionRunId], references: [id])
+  property     Property     @relation(fields: [propertyId], references: [id])
+
+  @@map("ingestion_errors")
+}

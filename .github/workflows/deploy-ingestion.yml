@@ -1,0 +1,21 @@
+name: Deploy Ingestion
+
+on:
+  push:
+    paths: ["services/ingestion/**"]
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: 195.35.36.227
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /opt/volttus-ingestion
+            git pull origin main
+            docker compose build
+            echo "Ingestion service updated. Next cron run will use new code."

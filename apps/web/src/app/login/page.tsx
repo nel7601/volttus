@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { loginAction } from "@/actions/auth"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,13 +17,25 @@ export default function LoginPage() {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const result = await loginAction(formData)
 
-    if (result?.error) {
-      setError(result.error)
+    try {
+      const result = await signIn("credentials", {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError("Invalid email or password")
+        setLoading(false)
+      } else {
+        // Full page reload to pick up new session cookie
+        window.location.href = "/"
+      }
+    } catch {
+      setError("Something went wrong")
       setLoading(false)
     }
-    // If no error, signIn redirects automatically (via redirectTo)
   }
 
   return (

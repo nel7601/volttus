@@ -1,15 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { loginAction } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function LoginPage() {
-  const router = useRouter()
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -19,20 +17,13 @@ export default function LoginPage() {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const result = await signIn("credentials", {
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-      redirect: false,
-    })
-
-    setLoading(false)
+    const result = await loginAction(formData)
 
     if (result?.error) {
-      setError("Invalid email or password")
-    } else {
-      router.push("/")
-      router.refresh()
+      setError(result.error)
+      setLoading(false)
     }
+    // If no error, signIn redirects automatically (via redirectTo)
   }
 
   return (

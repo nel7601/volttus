@@ -2,6 +2,7 @@
 
 import { signIn } from "@/auth"
 import { AuthError } from "next-auth"
+import { isRedirectError } from "next/dist/client/components/redirect-error"
 
 export async function loginAction(formData: FormData) {
   try {
@@ -11,6 +12,9 @@ export async function loginAction(formData: FormData) {
       redirectTo: "/",
     })
   } catch (error) {
+    if (isRedirectError(error)) {
+      throw error
+    }
     if (error instanceof AuthError) {
       return { error: "Invalid email or password" }
     }

@@ -12,8 +12,13 @@ class EmporiaClient:
     def login(self, email: str, password: str):
         """Authenticate with Emporia cloud."""
         logger.info(f"Logging in to Emporia as {email}")
-        self.vue.login(username=email, password=password)
-        logger.info("Emporia login successful")
+        logger.info(f"Password length: {len(password)}")
+        try:
+            self.vue.login(username=email, password=password)
+        except Exception as e:
+            logger.error(f"PyEmVue login exception: {type(e).__name__}: {e}")
+            raise
+        logger.info(f"Login result - auth token exists: {self.vue.auth is not None}")
 
     def get_devices(self):
         """Fetch all devices for the authenticated account."""

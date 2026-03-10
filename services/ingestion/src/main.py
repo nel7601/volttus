@@ -96,7 +96,7 @@ def run_ingestion_cycle(db: Database):
             )
 
         except Exception as e:
-            logger.error(f"Ingestion failed for property {property_name}: {e}")
+            logger.error(f"Ingestion failed for property {property_name}: {e}", exc_info=True)
             if run_id:
                 db.log_ingestion_error(
                     run_id,

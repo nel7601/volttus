@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
   const isLoggedIn = !!token
 
   // Public routes
-  if (path === "/login" || path.startsWith("/api/auth")) {
+  if (path === "/login" || path.startsWith("/api/auth") || path === "/api/debug-auth") {
     if (isLoggedIn && path === "/login") {
       const role = token.role as string
       if (role === "ADMIN") return NextResponse.redirect(new URL("/admin", req.url))

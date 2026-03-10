@@ -85,15 +85,16 @@ class Database:
 
                 # Sync channels
                 if dev.channels:
-                    for ch_num, channel in dev.channels.items():
+                    for channel in dev.channels:
+                        ch_num = getattr(channel, "channel_num", None) or 0
                         ch_name = getattr(channel, "name", None) or f"Channel {ch_num}"
-                        is_main = str(ch_num).lower() in (
-                            "1,2,3",
+                        is_main = str(ch_num) in ("1,2,3") or ch_name.lower() in (
                             "main",
                             "mainsfromgrid",
                             "mainstogrid",
+                            "balance",
+                            "totalusage",
                         )
-                        ch_number = int(ch_num) if str(ch_num).isdigit() else 0
 
                         cur.execute(
                             """
@@ -109,7 +110,7 @@ class Database:
                                 property_id,
                                 device_id,
                                 str(ch_num),
-                                ch_number,
+                                int(ch_num) if str(ch_num).isdigit() else 0,
                                 ch_name,
                                 ch_name,
                                 is_main,

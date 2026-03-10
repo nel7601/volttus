@@ -68,7 +68,15 @@ def run_ingestion_cycle(db: Database):
                 if not device_usage or not hasattr(device_usage, "channels"):
                     continue
 
-                for ch_num, channel_usage in device_usage.channels.items():
+                channels = device_usage.channels or []
+                # Handle both dict and list formats from PyEmVue
+                if isinstance(channels, dict):
+                    channel_list = channels.values()
+                else:
+                    channel_list = channels
+
+                for channel_usage in channel_list:
+                    ch_num = getattr(channel_usage, "channel_num", None) or 0
                     channel = db.get_channel_by_emporia_ids(
                         device_usage.device_gid, ch_num
                     )

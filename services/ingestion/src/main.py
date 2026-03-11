@@ -66,6 +66,7 @@ def run_ingestion_cycle(db: Database):
             now = datetime.now(timezone.utc)
 
             for device_usage in usage_data:
+                logger.info(f"device_usage type={type(device_usage).__name__}, attrs={[a for a in dir(device_usage) if not a.startswith('_')]}")
                 if not device_usage or not hasattr(device_usage, "channels"):
                     logger.warning(f"Skipping device_usage: no channels attr")
                     continue

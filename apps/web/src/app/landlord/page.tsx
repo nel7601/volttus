@@ -70,17 +70,36 @@ export default async function LandlordPage({
     },
   })
 
-  // Get consumption per group since last closing date using GroupMeasurement
+  // Get consumption per group since last closing date using Measurement table
+  // Aggregate kWh from individual channel measurements grouped by their assigned group
   const groupConsumption: Record<string, number> = {}
-  for (const group of groups) {
-    const result = await prisma.groupMeasurement.aggregate({
+  const groupIds = groups.map((g) => g.id)
+
+  if (groupIds.length > 0) {
+    const channelsWithConsumption = await prisma.channel.findMany({
       where: {
-        groupId: group.id,
-        measurementTs: { gte: lastClosingDate },
+        propertyId: property.id,
+        isEnabled: true,
+        assignedGroupId: { in: groupIds },
       },
-      _sum: { totalKwh: true },
+      select: {
+        assignedGroupId: true,
+        measurements: {
+          where: { measurementTs: { gte: lastClosingDate } },
+          select: { kwh: true },
+        },
+      },
     })
-    groupConsumption[group.id] = result._sum.totalKwh ?? 0
+
+    for (const ch of channelsWithConsumption) {
+      if (!ch.assignedGroupId) continue
+      const totalKwh = ch.measurements.reduce(
+        (sum, m) => sum + (m.kwh ?? 0),
+        0
+      )
+      groupConsumption[ch.assignedGroupId] =
+        (groupConsumption[ch.assignedGroupId] ?? 0) + totalKwh
+    }
   }
 
   // Find total income consumption

@@ -42,7 +42,8 @@ import {
 } from "lucide-react"
 import { ConsumptionBarChart } from "./consumption-bar-chart"
 import {
-  updatePropertySettings,
+  updatePropertyDetails,
+  updateMonthlyInvoice,
   updateCommonAreaSplit,
 } from "@/actions/property-settings"
 
@@ -85,6 +86,7 @@ export function LandlordDashboard({
   const router = useRouter()
   const property = properties.find((p) => p.id === selectedPropertyId)!
   const [editOpen, setEditOpen] = useState(false)
+  const [invoiceEditOpen, setInvoiceEditOpen] = useState(false)
 
   const displayGroups = groups.filter(
     (g) => g.groupType === "APARTMENT" || g.groupType === "COMMON"
@@ -121,7 +123,9 @@ export function LandlordDashboard({
             onValueChange={handlePropertyChange}
           >
             <SelectTrigger className="w-[250px]">
-              <SelectValue />
+              <SelectValue placeholder={property.propertyName}>
+                {property.propertyName}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {properties.map((p) => (
@@ -212,11 +216,24 @@ export function LandlordDashboard({
 
         {/* Right card: consumption + invoice (40%) */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-orange-500" />
               Consumption
             </CardTitle>
+            <Dialog open={invoiceEditOpen} onOpenChange={setInvoiceEditOpen}>
+              <DialogTrigger
+                render={
+                  <Button variant="ghost" size="icon-sm">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              <EditInvoiceDialog
+                property={property}
+                onClose={() => setInvoiceEditOpen(false)}
+              />
+            </Dialog>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Total consumption */}
@@ -271,19 +288,8 @@ export function LandlordDashboard({
 
                 return (
                   <TableRow key={group.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{group.groupName}</span>
-                        <Badge
-                          variant={
-                            group.groupType === "APARTMENT"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {group.groupType}
-                        </Badge>
-                      </div>
+                    <TableCell className="font-medium">
+                      {group.groupName}
                     </TableCell>
                     <TableCell className="text-right">
                       {group.consumptionKwh.toFixed(3)}
@@ -353,18 +359,54 @@ function EditPropertyDialog({
   onClose: () => void
 }) {
   async function handleSubmit(formData: FormData) {
-    await updatePropertySettings(formData)
+    await updatePropertyDetails(formData)
     onClose()
   }
 
   return (
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>Edit Property Settings</DialogTitle>
+        <DialogTitle>Edit Property</DialogTitle>
       </DialogHeader>
       <form action={handleSubmit}>
         <input type="hidden" name="propertyId" value={property.id} />
         <div className="space-y-4 py-2">
+          <div>
+            <Label htmlFor="propertyName">Property Name</Label>
+            <Input
+              id="propertyName"
+              name="propertyName"
+              defaultValue={property.propertyName}
+              placeholder="Property name"
+            />
+          </div>
+          <div>
+            <Label htmlFor="addressLine1">Address</Label>
+            <Input
+              id="addressLine1"
+              name="addressLine1"
+              defaultValue={property.addressLine1}
+              placeholder="Address line 1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="addressLine2">Address Line 2</Label>
+            <Input
+              id="addressLine2"
+              name="addressLine2"
+              defaultValue={property.addressLine2 ?? ""}
+              placeholder="Apt, suite, etc. (optional)"
+            />
+          </div>
+          <div>
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              name="city"
+              defaultValue={property.city}
+              placeholder="City"
+            />
+          </div>
           <div>
             <Label htmlFor="billingClosingDay">
               Billing Closing Day (1-31)
@@ -379,6 +421,35 @@ function EditPropertyDialog({
               placeholder="e.g. 15"
             />
           </div>
+        </div>
+        <DialogFooter>
+          <Button type="submit">Save Changes</Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  )
+}
+
+function EditInvoiceDialog({
+  property,
+  onClose,
+}: {
+  property: PropertyData
+  onClose: () => void
+}) {
+  async function handleSubmit(formData: FormData) {
+    await updateMonthlyInvoice(formData)
+    onClose()
+  }
+
+  return (
+    <DialogContent className="sm:max-w-sm">
+      <DialogHeader>
+        <DialogTitle>Edit Monthly Invoice</DialogTitle>
+      </DialogHeader>
+      <form action={handleSubmit}>
+        <input type="hidden" name="propertyId" value={property.id} />
+        <div className="space-y-4 py-2">
           <div>
             <Label htmlFor="monthlyInvoiceAmount">
               Monthly Invoice Amount ($)

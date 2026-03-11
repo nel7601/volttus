@@ -4,20 +4,40 @@ import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
-export async function updatePropertySettings(formData: FormData) {
+export async function updatePropertyDetails(formData: FormData) {
   const session = await getSession()
   if (!session || (session.role !== "ADMIN" && session.role !== "LANDLORD")) {
     throw new Error("Unauthorized")
   }
 
   const propertyId = formData.get("propertyId") as string
+  const propertyName = formData.get("propertyName") as string
+  const addressLine1 = formData.get("addressLine1") as string
+  const addressLine2 = (formData.get("addressLine2") as string) || null
+  const city = formData.get("city") as string
   const billingClosingDay = Number(formData.get("billingClosingDay")) || null
+
+  await prisma.property.update({
+    where: { id: propertyId },
+    data: { propertyName, addressLine1, addressLine2, city, billingClosingDay },
+  })
+
+  revalidatePath("/landlord")
+}
+
+export async function updateMonthlyInvoice(formData: FormData) {
+  const session = await getSession()
+  if (!session || (session.role !== "ADMIN" && session.role !== "LANDLORD")) {
+    throw new Error("Unauthorized")
+  }
+
+  const propertyId = formData.get("propertyId") as string
   const monthlyInvoiceAmount =
     Number(formData.get("monthlyInvoiceAmount")) || null
 
   await prisma.property.update({
     where: { id: propertyId },
-    data: { billingClosingDay, monthlyInvoiceAmount },
+    data: { monthlyInvoiceAmount },
   })
 
   revalidatePath("/landlord")

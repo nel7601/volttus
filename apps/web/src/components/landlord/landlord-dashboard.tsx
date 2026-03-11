@@ -313,7 +313,7 @@ export function LandlordDashboard({
                       <div className="flex items-center gap-2">
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${
-                            isApartment ? "bg-sky-400" : "bg-sky-700"
+                            isApartment ? "bg-emerald-500" : "bg-amber-500"
                           }`}
                         />
                         <span className="font-medium">{group.groupName}</span>
@@ -326,11 +326,13 @@ export function LandlordDashboard({
                       <Badge
                         variant="outline"
                         className={
-                          pct > 30
-                            ? "border-sky-600/30 text-sky-700 bg-sky-500/10"
-                            : pct > 15
-                              ? "border-sky-500/30 text-sky-600 bg-sky-500/5"
-                              : "border-sky-400/30 text-sky-500 bg-sky-400/5"
+                          isApartment
+                            ? pct > 30
+                              ? "border-emerald-600/30 text-emerald-700 bg-emerald-500/10"
+                              : "border-emerald-500/30 text-emerald-600 bg-emerald-500/5"
+                            : pct > 30
+                              ? "border-amber-600/30 text-amber-700 bg-amber-500/10"
+                              : "border-amber-500/30 text-amber-600 bg-amber-500/5"
                         }
                       >
                         {pct.toFixed(1)}%
@@ -400,11 +402,11 @@ export function LandlordDashboard({
                   <span className="text-xs text-muted-foreground">Income</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-sm bg-sky-700" />
+                  <span className="h-3 w-3 rounded-sm bg-amber-500" />
                   <span className="text-xs text-muted-foreground">Common</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-sm bg-sky-400" />
+                  <span className="h-3 w-3 rounded-sm bg-emerald-500" />
                   <span className="text-xs text-muted-foreground">
                     Apartment
                   </span>

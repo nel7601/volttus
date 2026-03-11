@@ -17,8 +17,8 @@ interface BarChartProps {
 
 const COLORS: Record<string, string> = {
   INCOME: "#0ea5e9",
-  COMMON: "#0369a1",
-  APARTMENT: "#38bdf8",
+  COMMON: "#f59e0b",
+  APARTMENT: "#10b981",
 }
 
 export function ConsumptionBarChart({ data }: BarChartProps) {

@@ -54,9 +54,13 @@ export default async function LandlordPage({
 
   const lastClosingDate = getLastClosingDate(property.billingClosingDay)
 
-  // Fetch groups with tenants and consumption since last closing
+  // Fetch only groups that have at least one enabled channel assigned
   const groups = await prisma.channelGroup.findMany({
-    where: { propertyId: property.id, isActive: true },
+    where: {
+      propertyId: property.id,
+      isActive: true,
+      channels: { some: { isEnabled: true } },
+    },
     orderBy: { displayOrder: "asc" },
     include: {
       tenants: {

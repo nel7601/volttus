@@ -12,10 +12,10 @@ export function PortalHeader({
   subtitle?: string
 }) {
   return (
-    <header className="flex items-center justify-between border-b bg-gradient-to-r from-orange-500/5 via-transparent to-amber-500/5 px-6 py-3">
+    <header className="flex items-center justify-between border-b bg-gradient-to-r from-sky-500/8 via-transparent to-cyan-500/8 px-6 py-3">
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10">
-          <Zap className="h-4 w-4 text-orange-500" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
+          <Zap className="h-4 w-4 text-sky-500" />
         </div>
         <div>
           <h1 className="font-semibold">{title}</h1>

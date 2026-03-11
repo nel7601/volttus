@@ -141,7 +141,7 @@ export function LandlordDashboard({
           </Select>
         </div>
         <Link href={`/landlord/history?propertyId=${selectedPropertyId}`}>
-          <Button className="bg-orange-500 text-white hover:bg-orange-600">
+          <Button className="bg-sky-500 text-white hover:bg-sky-600">
             <History className="h-4 w-4 mr-1" />
             View History
           </Button>
@@ -151,11 +151,11 @@ export function LandlordDashboard({
       {/* Property info + Consumption cards */}
       <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
         {/* Left card: property details (60%) */}
-        <Card className="border-l-4 border-l-indigo-500">
+        <Card className="border-l-4 border-l-sky-600">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10">
-                <Building2 className="h-4 w-4 text-indigo-500" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
+                <Building2 className="h-4 w-4 text-sky-600" />
               </div>
               {property.propertyName}
             </CardTitle>
@@ -176,16 +176,16 @@ export function LandlordDashboard({
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Address */}
-              <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-3">
-                <MapPin className="h-4 w-4 mt-0.5 text-indigo-400" />
+              <div className="flex items-start gap-3 rounded-lg bg-sky-50/50 dark:bg-sky-500/5 p-3">
+                <MapPin className="h-4 w-4 mt-0.5 text-sky-500" />
                 <div>
                   <p className="text-xs text-muted-foreground">Address</p>
                   <p className="text-sm font-medium">{address}</p>
                 </div>
               </div>
               {/* Billing closing day */}
-              <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-3">
-                <CalendarDays className="h-4 w-4 mt-0.5 text-indigo-400" />
+              <div className="flex items-start gap-3 rounded-lg bg-sky-50/50 dark:bg-sky-500/5 p-3">
+                <CalendarDays className="h-4 w-4 mt-0.5 text-sky-500" />
                 <div>
                   <p className="text-xs text-muted-foreground">
                     Billing Closing Date
@@ -196,7 +196,7 @@ export function LandlordDashboard({
             </div>
 
             {/* Common area split selector */}
-            <div className="mt-5 rounded-lg border border-indigo-500/20 bg-indigo-500/5 p-4">
+            <div className="mt-5 rounded-lg border border-sky-500/20 bg-sky-500/5 p-4">
               <p className="text-sm font-medium mb-2">
                 Common Area Cost Distribution
               </p>
@@ -221,11 +221,11 @@ export function LandlordDashboard({
         </Card>
 
         {/* Right card: consumption + invoice (40%) */}
-        <Card className="border-l-4 border-l-orange-500">
+        <Card className="border-l-4 border-l-sky-400">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10">
-                <Zap className="h-4 w-4 text-orange-500" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
+                <Zap className="h-4 w-4 text-sky-500" />
               </div>
               Consumption
             </CardTitle>
@@ -245,11 +245,11 @@ export function LandlordDashboard({
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Total consumption */}
-            <div className="rounded-lg bg-orange-500/5 border border-orange-500/20 p-4">
+            <div className="rounded-lg bg-sky-500/5 border border-sky-500/20 p-4">
               <p className="text-xs text-muted-foreground">
                 Total Consumption (Income)
               </p>
-              <p className="text-3xl font-bold text-orange-600">
+              <p className="text-3xl font-bold text-sky-600">
                 {totalIncomeKwh.toFixed(3)}{" "}
                 <span className="text-base font-medium text-muted-foreground">
                   kWh
@@ -257,14 +257,14 @@ export function LandlordDashboard({
               </p>
             </div>
             {/* Monthly invoice */}
-            <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4">
+            <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Receipt className="h-3.5 w-3.5 text-emerald-500" />
+                <Receipt className="h-3.5 w-3.5 text-amber-500" />
                 <p className="text-xs text-muted-foreground">
                   Monthly Invoice Amount
                 </p>
               </div>
-              <p className="text-3xl font-bold text-emerald-600">
+              <p className="text-3xl font-bold text-amber-600">
                 {property.monthlyInvoiceAmount !== null
                   ? `$${property.monthlyInvoiceAmount.toFixed(2)}`
                   : "Not set"}
@@ -278,8 +278,8 @@ export function LandlordDashboard({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10">
-              <BarChart3 className="h-4 w-4 text-violet-500" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
+              <BarChart3 className="h-4 w-4 text-sky-600" />
             </div>
             Groups
           </CardTitle>
@@ -287,7 +287,7 @@ export function LandlordDashboard({
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50">
+              <TableRow className="bg-sky-50/50 dark:bg-sky-500/5">
                 <TableHead>Name</TableHead>
                 <TableHead className="text-right">Consumption (kWh)</TableHead>
                 <TableHead className="text-right">%</TableHead>
@@ -308,12 +308,12 @@ export function LandlordDashboard({
                 const isApartment = group.groupType === "APARTMENT"
 
                 return (
-                  <TableRow key={group.id} className="hover:bg-muted/30">
+                  <TableRow key={group.id} className="hover:bg-sky-50/30 dark:hover:bg-sky-500/5">
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${
-                            isApartment ? "bg-emerald-500" : "bg-indigo-500"
+                            isApartment ? "bg-sky-400" : "bg-sky-700"
                           }`}
                         />
                         <span className="font-medium">{group.groupName}</span>
@@ -327,10 +327,10 @@ export function LandlordDashboard({
                         variant="outline"
                         className={
                           pct > 30
-                            ? "border-orange-500/30 text-orange-600 bg-orange-500/5"
+                            ? "border-sky-600/30 text-sky-700 bg-sky-500/10"
                             : pct > 15
-                              ? "border-amber-500/30 text-amber-600 bg-amber-500/5"
-                              : "border-emerald-500/30 text-emerald-600 bg-emerald-500/5"
+                              ? "border-sky-500/30 text-sky-600 bg-sky-500/5"
+                              : "border-sky-400/30 text-sky-500 bg-sky-400/5"
                         }
                       >
                         {pct.toFixed(1)}%
@@ -359,7 +359,7 @@ export function LandlordDashboard({
                             className={
                               group.tenant
                                 ? "text-muted-foreground hover:text-foreground"
-                                : "text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
+                                : "text-sky-500 hover:text-sky-600 hover:bg-sky-500/10"
                             }
                           >
                             {group.tenant ? (
@@ -383,8 +383,8 @@ export function LandlordDashboard({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10">
-              <Zap className="h-4 w-4 text-orange-500" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
+              <Zap className="h-4 w-4 text-sky-500" />
             </div>
             Consumption by Group
           </CardTitle>
@@ -396,15 +396,15 @@ export function LandlordDashboard({
               {/* Legend */}
               <div className="flex items-center justify-center gap-6 mt-4">
                 <div className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-sm bg-orange-500" />
+                  <span className="h-3 w-3 rounded-sm bg-sky-500" />
                   <span className="text-xs text-muted-foreground">Income</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-sm bg-indigo-500" />
+                  <span className="h-3 w-3 rounded-sm bg-sky-700" />
                   <span className="text-xs text-muted-foreground">Common</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-sm bg-emerald-500" />
+                  <span className="h-3 w-3 rounded-sm bg-sky-400" />
                   <span className="text-xs text-muted-foreground">
                     Apartment
                   </span>
@@ -496,7 +496,7 @@ function EditPropertyDialog({
         <DialogFooter>
           <Button
             type="submit"
-            className="bg-indigo-500 hover:bg-indigo-600 text-white"
+            className="bg-sky-500 hover:bg-sky-600 text-white"
           >
             Save Changes
           </Button>
@@ -544,7 +544,7 @@ function EditInvoiceDialog({
         <DialogFooter>
           <Button
             type="submit"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white"
+            className="bg-sky-500 hover:bg-sky-600 text-white"
           >
             Save Changes
           </Button>

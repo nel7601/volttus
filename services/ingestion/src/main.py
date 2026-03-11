@@ -59,6 +59,7 @@ def run_ingestion_cycle(db: Database):
 
             # Fetch usage data
             usage_data = client.get_usage(emporia_devices)
+            logger.info(f"Usage data: {len(usage_data)} device(s) returned")
 
             # Write measurements
             records_inserted = 0
@@ -66,9 +67,12 @@ def run_ingestion_cycle(db: Database):
 
             for device_usage in usage_data:
                 if not device_usage or not hasattr(device_usage, "channels"):
+                    logger.warning(f"Skipping device_usage: no channels attr")
                     continue
 
                 channels = device_usage.channels or []
+                logger.info(f"Device {device_usage.device_gid}: {len(channels)} channels, type={type(channels).__name__}")
+
                 # Handle both dict and list formats from PyEmVue
                 if isinstance(channels, dict):
                     channel_list = channels.values()
@@ -77,20 +81,27 @@ def run_ingestion_cycle(db: Database):
 
                 for channel_usage in channel_list:
                     ch_num = getattr(channel_usage, "channel_num", None) or 0
+                    kwh_value = getattr(channel_usage, "usage", None)
                     channel = db.get_channel_by_emporia_ids(
                         device_usage.device_gid, ch_num
                     )
-                    if channel and channel["is_enabled"]:
-                        kwh_value = getattr(channel_usage, "usage", None)
-                        db.insert_measurement(
-                            property_id=property_id,
-                            device_id=channel["device_id"],
-                            channel_id=channel["id"],
-                            measurement_ts=now,
-                            kwh=kwh_value,
-                            ingestion_run_id=run_id,
-                        )
-                        records_inserted += 1
+                    if not channel:
+                        logger.debug(f"  ch_num={ch_num}: NOT FOUND in DB")
+                        continue
+                    if not channel["is_enabled"]:
+                        logger.debug(f"  ch_num={ch_num}: disabled")
+                        continue
+
+                    logger.debug(f"  ch_num={ch_num}: kwh={kwh_value}, inserting")
+                    db.insert_measurement(
+                        property_id=property_id,
+                        device_id=channel["device_id"],
+                        channel_id=channel["id"],
+                        measurement_ts=now,
+                        kwh=kwh_value,
+                        ingestion_run_id=run_id,
+                    )
+                    records_inserted += 1
 
                 # Update device sync time
                 db.update_device_sync_time(device_usage.device_gid)

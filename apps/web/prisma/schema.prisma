@@ -32,6 +32,11 @@ enum TriggerType {
   RETRY
 }
 
+enum CommonAreaSplit {
+  EQUAL
+  PROPORTIONAL
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -87,8 +92,11 @@ model Property {
   provinceState String?  @map("province_state")
   postalCode    String?  @map("postal_code")
   country       String   @default("HR")
-  timezone      String   @default("Europe/Zagreb")
-  isActive      Boolean  @default(true) @map("is_active")
+  timezone             String          @default("Europe/Zagreb")
+  billingClosingDay    Int?            @map("billing_closing_day")
+  commonAreaSplit      CommonAreaSplit @default(EQUAL) @map("common_area_split")
+  monthlyInvoiceAmount Float?          @map("monthly_invoice_amount")
+  isActive             Boolean         @default(true) @map("is_active")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 

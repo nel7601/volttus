@@ -1,53 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useActionState } from "react"
+import { loginAction } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function LoginPage() {
-  const [csrfToken, setCsrfToken] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    fetch("/api/auth/csrf")
-      .then((res) => res.json())
-      .then((data) => setCsrfToken(data.csrfToken))
-      .catch(() => {})
-  }, [])
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
-
-    const formData = new FormData(e.currentTarget)
-
-    try {
-      const res = await fetch("/api/auth/callback/credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          csrfToken,
-          email: formData.get("email") as string,
-          password: formData.get("password") as string,
-        }),
-        redirect: "manual",
-      })
-
-      if (res.status === 200 || res.type === "opaqueredirect") {
-        window.location.href = "/"
-      } else {
-        setError("Invalid email or password")
-        setLoading(false)
-      }
-    } catch {
-      setError("Something went wrong")
-      setLoading(false)
-    }
-  }
+  const [state, formAction, isPending] = useActionState(loginAction, { error: "" })
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50">
@@ -57,9 +18,9 @@ export default function LoginPage() {
           <CardDescription>Energy Monitoring Platform</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <p className="text-sm text-destructive text-center">{error}</p>
+          <form action={formAction} className="space-y-4">
+            {state?.error && (
+              <p className="text-sm text-destructive text-center">{state.error}</p>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -80,8 +41,8 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading || !csrfToken}>
-              {loading ? "Signing in..." : "Sign In"}
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Signing in..." : "Sign In"}
             </Button>
           </form>
         </CardContent>

@@ -1,13 +1,13 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth"
 import { groupSchema } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
 
 export async function createGroup(formData: FormData) {
-  const session = await auth()
-  if (session?.user?.role !== "ADMIN") throw new Error("Unauthorized")
+  const session = await getSession()
+  if (session?.role !== "ADMIN") throw new Error("Unauthorized")
 
   const parsed = groupSchema.parse({
     groupName: formData.get("groupName"),
@@ -22,8 +22,8 @@ export async function createGroup(formData: FormData) {
 }
 
 export async function deleteGroup(id: string, propertyId: string) {
-  const session = await auth()
-  if (session?.user?.role !== "ADMIN") throw new Error("Unauthorized")
+  const session = await getSession()
+  if (session?.role !== "ADMIN") throw new Error("Unauthorized")
 
   await prisma.channelGroup.delete({ where: { id } })
   revalidatePath(`/admin/properties/${propertyId}/groups`)

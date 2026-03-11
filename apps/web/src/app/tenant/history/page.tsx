@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,13 +11,13 @@ export default async function TenantHistoryPage({
 }: {
   searchParams: Promise<{ period?: string }>
 }) {
-  const session = await auth()
-  if (!session?.user) redirect("/login")
+  const session = await getSession()
+  if (!session) redirect("/login")
 
   const { period = "24h" } = await searchParams
 
   const tenant = await prisma.tenant.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: session.id },
     include: {
       apartmentGroup: {
         include: { channels: { where: { isEnabled: true } } },

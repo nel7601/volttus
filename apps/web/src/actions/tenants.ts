@@ -1,14 +1,14 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth"
 import { tenantSchema } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 
 export async function createTenant(formData: FormData) {
-  const session = await auth()
-  if (session?.user?.role !== "ADMIN") throw new Error("Unauthorized")
+  const session = await getSession()
+  if (session?.role !== "ADMIN") throw new Error("Unauthorized")
 
   const parsed = tenantSchema.parse({
     email: formData.get("email"),
@@ -43,8 +43,8 @@ export async function createTenant(formData: FormData) {
 }
 
 export async function deleteTenant(tenantId: string) {
-  const session = await auth()
-  if (session?.user?.role !== "ADMIN") throw new Error("Unauthorized")
+  const session = await getSession()
+  if (session?.role !== "ADMIN") throw new Error("Unauthorized")
 
   const tenant = await prisma.tenant.findUnique({
     where: { id: tenantId },

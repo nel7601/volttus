@@ -1,7 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
 export async function updateChannelMapping(
@@ -12,8 +12,8 @@ export async function updateChannelMapping(
     isEnabled?: boolean
   }
 ) {
-  const session = await auth()
-  if (session?.user?.role !== "ADMIN") throw new Error("Unauthorized")
+  const session = await getSession()
+  if (session?.role !== "ADMIN") throw new Error("Unauthorized")
 
   await prisma.channel.update({
     where: { id: channelId },
@@ -30,8 +30,8 @@ export async function bulkUpdateChannelMappings(
     isEnabled: boolean
   }>
 ) {
-  const session = await auth()
-  if (session?.user?.role !== "ADMIN") throw new Error("Unauthorized")
+  const session = await getSession()
+  if (session?.role !== "ADMIN") throw new Error("Unauthorized")
 
   await prisma.$transaction(
     mappings.map((m) =>

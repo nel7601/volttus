@@ -1,13 +1,13 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 
 export async function createLandlord(formData: FormData) {
-  const session = await auth()
-  if (session?.user?.role !== "ADMIN") throw new Error("Unauthorized")
+  const session = await getSession()
+  if (session?.role !== "ADMIN") throw new Error("Unauthorized")
 
   const email = formData.get("email") as string
   const fullName = formData.get("fullName") as string

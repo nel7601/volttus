@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,11 +15,11 @@ import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 export default async function LandlordDashboard() {
-  const session = await auth()
-  if (!session?.user) redirect("/login")
+  const session = await getSession()
+  if (!session) redirect("/login")
 
   const landlord = await prisma.landlord.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: session.id },
     include: { properties: true },
   })
 

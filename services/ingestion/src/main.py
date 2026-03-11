@@ -65,27 +65,26 @@ def run_ingestion_cycle(db: Database):
             records_inserted = 0
             now = datetime.now(timezone.utc)
 
-            for device_usage in usage_data:
-                logger.info(f"device_usage type={type(device_usage).__name__}, attrs={[a for a in dir(device_usage) if not a.startswith('_')]}")
+            # usage_data is a dict: {device_gid: VueDeviceUsage}
+            usage_items = usage_data.items() if isinstance(usage_data, dict) else enumerate(usage_data)
+
+            for device_gid, device_usage in usage_items:
                 if not device_usage or not hasattr(device_usage, "channels"):
-                    logger.warning(f"Skipping device_usage: no channels attr")
+                    logger.warning(f"Device {device_gid}: no channels attr, type={type(device_usage).__name__}")
                     continue
 
                 channels = device_usage.channels or []
-                logger.info(f"Device {device_usage.device_gid}: {len(channels)} channels, type={type(channels).__name__}")
+                logger.info(f"Device {device_gid}: {len(channels)} channel usages")
 
-                # Handle both dict and list formats from PyEmVue
+                # Handle both dict and list formats
                 if isinstance(channels, dict):
-                    channel_list = channels.values()
+                    channel_items = channels.items()
                 else:
-                    channel_list = channels
+                    channel_items = [(getattr(ch, "channel_num", i), ch) for i, ch in enumerate(channels)]
 
-                for channel_usage in channel_list:
-                    ch_num = getattr(channel_usage, "channel_num", None) or 0
+                for ch_num, channel_usage in channel_items:
                     kwh_value = getattr(channel_usage, "usage", None)
-                    channel = db.get_channel_by_emporia_ids(
-                        device_usage.device_gid, ch_num
-                    )
+                    channel = db.get_channel_by_emporia_ids(device_gid, ch_num)
                     if not channel:
                         logger.debug(f"  ch_num={ch_num}: NOT FOUND in DB")
                         continue
@@ -105,7 +104,7 @@ def run_ingestion_cycle(db: Database):
                     records_inserted += 1
 
                 # Update device sync time
-                db.update_device_sync_time(device_usage.device_gid)
+                db.update_device_sync_time(device_gid)
 
             # Compute group aggregations
             db.compute_group_measurements(property_id, now, run_id)

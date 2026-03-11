@@ -140,85 +140,108 @@ export function LandlordDashboard({
         </Link>
       </div>
 
-      {/* Property info card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            {property.propertyName}
-          </CardTitle>
-          <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogTrigger
-              render={
-                <Button variant="ghost" size="icon-sm">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              }
-            />
-            <EditPropertyDialog
-              property={property}
-              onClose={() => setEditOpen(false)}
-            />
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Address */}
-            <div className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Address</p>
-                <p className="text-sm font-medium">{address}</p>
+      {/* Property info + Consumption cards */}
+      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+        {/* Left card: property details (60%) */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              {property.propertyName}
+            </CardTitle>
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+              <DialogTrigger
+                render={
+                  <Button variant="ghost" size="icon-sm">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              <EditPropertyDialog
+                property={property}
+                onClose={() => setEditOpen(false)}
+              />
+            </Dialog>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Address */}
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Address</p>
+                  <p className="text-sm font-medium">{address}</p>
+                </div>
+              </div>
+              {/* Billing closing day */}
+              <div className="flex items-start gap-2">
+                <CalendarDays className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    Billing Closing Date
+                  </p>
+                  <p className="text-sm font-medium">{closingDate}</p>
+                </div>
               </div>
             </div>
-            {/* Billing closing day */}
-            <div className="flex items-start gap-2">
-              <CalendarDays className="h-4 w-4 mt-0.5 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">
-                  Billing Closing Date
-                </p>
-                <p className="text-sm font-medium">{closingDate}</p>
-              </div>
-            </div>
-            {/* Total consumption */}
-            <div className="flex items-start gap-2">
-              <Zap className="h-4 w-4 mt-0.5 text-orange-500" />
-              <div>
-                <p className="text-xs text-muted-foreground">
-                  Total Consumption (Income)
-                </p>
-                <p className="text-2xl font-bold">
-                  {totalIncomeKwh.toFixed(3)} kWh
-                </p>
-              </div>
-            </div>
-          </div>
 
-          {/* Common area split selector */}
-          <div className="mt-6 rounded-lg border p-4">
-            <p className="text-sm font-medium mb-2">
-              Common Area Cost Distribution
-            </p>
-            <Select
-              value={property.commonAreaSplit}
-              onValueChange={handleSplitChange}
-            >
-              <SelectTrigger className="w-[350px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="EQUAL">
-                  Split equally among all apartments
-                </SelectItem>
-                <SelectItem value="PROPORTIONAL">
-                  Split by consumption percentage
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+            {/* Common area split selector */}
+            <div className="mt-6 rounded-lg border p-4">
+              <p className="text-sm font-medium mb-2">
+                Common Area Cost Distribution
+              </p>
+              <Select
+                value={property.commonAreaSplit}
+                onValueChange={handleSplitChange}
+              >
+                <SelectTrigger className="w-[350px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EQUAL">
+                    Split equally among all apartments
+                  </SelectItem>
+                  <SelectItem value="PROPORTIONAL">
+                    Split by consumption percentage
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Right card: consumption + invoice (40%) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-orange-500" />
+              Consumption
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Total consumption */}
+            <div>
+              <p className="text-xs text-muted-foreground">
+                Total Consumption (Income)
+              </p>
+              <p className="text-3xl font-bold">
+                {totalIncomeKwh.toFixed(3)} kWh
+              </p>
+            </div>
+            {/* Monthly invoice */}
+            <div>
+              <p className="text-xs text-muted-foreground">
+                Monthly Invoice Amount
+              </p>
+              <p className="text-3xl font-bold">
+                {property.monthlyInvoiceAmount !== null
+                  ? `$${property.monthlyInvoiceAmount.toFixed(2)}`
+                  : "Not set"}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Groups table */}
       <Card>

@@ -93,8 +93,9 @@ export default async function LandlordPage({
 
     for (const ch of channelsWithConsumption) {
       if (!ch.assignedGroupId) continue
+      // Only sum positive kWh values (ignore export/negative readings)
       const totalKwh = ch.measurements.reduce(
-        (sum, m) => sum + (m.kwh ?? 0),
+        (sum, m) => sum + Math.max(0, m.kwh ?? 0),
         0
       )
       groupConsumption[ch.assignedGroupId] =

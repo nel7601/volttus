@@ -12,7 +12,7 @@ import {
   LogOut,
   Zap,
 } from "lucide-react"
-import { signOut } from "next-auth/react"
+import { logoutAction } from "@/actions/auth"
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: BarChart3 },
@@ -55,13 +55,15 @@ export function AdminSidebar() {
         })}
       </nav>
       <div className="border-t p-2">
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </button>
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
+        </form>
       </div>
     </aside>
   )

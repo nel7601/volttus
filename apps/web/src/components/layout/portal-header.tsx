@@ -1,6 +1,6 @@
 "use client"
 
-import { signOut } from "next-auth/react"
+import { logoutAction } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Zap, LogOut } from "lucide-react"
 
@@ -22,14 +22,12 @@ export function PortalHeader({
           )}
         </div>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => signOut({ callbackUrl: "/login" })}
-      >
-        <LogOut className="h-4 w-4 mr-1" />
-        Sign Out
-      </Button>
+      <form action={logoutAction}>
+        <Button variant="ghost" size="sm" type="submit">
+          <LogOut className="h-4 w-4 mr-1" />
+          Sign Out
+        </Button>
+      </form>
     </header>
   )
 }

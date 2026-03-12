@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getLastClosingDate } from "@/lib/billing"
 import { redirect } from "next/navigation"
 import {
   LandlordDashboard,
@@ -9,23 +10,6 @@ import {
 } from "@/components/landlord/landlord-dashboard"
 
 export const dynamic = "force-dynamic"
-
-function getLastClosingDate(billingClosingDay: number | null): Date {
-  if (!billingClosingDay) {
-    // Default: first day of current month
-    const now = new Date()
-    return new Date(now.getFullYear(), now.getMonth(), 1)
-  }
-  const now = new Date()
-  const thisMonthClosing = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    billingClosingDay
-  )
-  if (now >= thisMonthClosing) return thisMonthClosing
-  // Go to previous month's closing day
-  return new Date(now.getFullYear(), now.getMonth() - 1, billingClosingDay)
-}
 
 export default async function LandlordPage({
   searchParams,

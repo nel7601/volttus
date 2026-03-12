@@ -92,6 +92,7 @@ model Property {
   measurements    Measurement[]
   ingestionRuns   IngestionRun[]
   ingestionErrors IngestionError[]
+  billingRecords  BillingRecord[]
 
   @@map("properties")
 }
@@ -251,4 +252,39 @@ model IngestionError {
   property     Property     @relation(fields: [propertyId], references: [id])
 
   @@map("ingestion_errors")
+}
+
+model BillingRecord {
+  id                   String          @id @default(cuid())
+  propertyId           String          @map("property_id")
+  billingPeriodStart   DateTime        @map("billing_period_start")
+  billingPeriodEnd     DateTime        @map("billing_period_end")
+  billingClosingDay    Int             @map("billing_closing_day")
+  totalConsumptionKwh  Float           @map("total_consumption_kwh")
+  monthlyInvoiceAmount Float           @map("monthly_invoice_amount")
+  commonAreaSplit      CommonAreaSplit @map("common_area_split")
+  createdAt            DateTime        @default(now()) @map("created_at")
+
+  property Property            @relation(fields: [propertyId], references: [id])
+  items    BillingRecordItem[]
+
+  @@unique([propertyId, billingPeriodEnd])
+  @@map("billing_records")
+}
+
+model BillingRecordItem {
+  id              String    @id @default(cuid())
+  billingRecordId String    @map("billing_record_id")
+  groupId         String    @map("group_id")
+  groupName       String    @map("group_name")
+  groupType       GroupType @map("group_type")
+  kwh             Float
+  percentage      Float
+  toPay           Float?    @map("to_pay")
+  tenantName      String?   @map("tenant_name")
+  tenantId        String?   @map("tenant_id")
+
+  billingRecord BillingRecord @relation(fields: [billingRecordId], references: [id], onDelete: Cascade)
+
+  @@map("billing_record_items")
 }

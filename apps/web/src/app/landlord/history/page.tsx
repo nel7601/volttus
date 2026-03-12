@@ -1,20 +1,21 @@
 import { getSession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ConsumptionChart } from "@/components/dashboard/consumption-chart"
 import Link from "next/link"
+import {
+  BillingHistory,
+  type BillingRecordData,
+} from "@/components/landlord/billing-history"
 
 export const dynamic = "force-dynamic"
+
 export default async function LandlordHistoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string }>
+  searchParams: Promise<{ propertyId?: string; year?: string; month?: string }>
 }) {
   const session = await getSession()
   if (!session) redirect("/login")
-
-  const { period = "24h" } = await searchParams
 
   const landlord = await prisma.user.findUnique({
     where: { id: session.id },
@@ -22,92 +23,109 @@ export default async function LandlordHistoryPage({
   })
 
   if (!landlord || landlord.properties.length === 0) {
-    return <div className="py-16 text-center text-muted-foreground">No properties found.</div>
+    return (
+      <div className="py-16 text-center text-muted-foreground">
+        No properties found.
+      </div>
+    )
   }
 
-  const property = landlord.properties[0]
+  const params = await searchParams
+  const selectedPropertyId = params.propertyId ?? landlord.properties[0].id
+  const property = landlord.properties.find((p) => p.id === selectedPropertyId)
+  if (!property) redirect("/landlord/history")
 
-  const periodMs: Record<string, number> = {
-    "24h": 24 * 60 * 60 * 1000,
-    "7d": 7 * 24 * 60 * 60 * 1000,
-    "30d": 30 * 24 * 60 * 60 * 1000,
+  const now = new Date()
+  const selectedYear = params.year ? parseInt(params.year, 10) : now.getFullYear()
+  const selectedMonth = params.month ? parseInt(params.month, 10) : null
+
+  // Build date range filter
+  let dateFrom: Date
+  let dateTo: Date
+
+  if (selectedMonth !== null) {
+    dateFrom = new Date(selectedYear, selectedMonth - 1, 1)
+    dateTo = new Date(selectedYear, selectedMonth, 1)
+  } else {
+    dateFrom = new Date(selectedYear, 0, 1)
+    dateTo = new Date(selectedYear + 1, 0, 1)
   }
 
-  const startDate = new Date(Date.now() - (periodMs[period] ?? periodMs["24h"]))
-
-  const measurements = await prisma.measurement.findMany({
+  const records = await prisma.billingRecord.findMany({
     where: {
-      propertyId: property.id,
-      measurementTs: { gte: startDate },
+      propertyId: selectedPropertyId,
+      billingPeriodEnd: {
+        gte: dateFrom,
+        lt: dateTo,
+      },
     },
-    orderBy: { measurementTs: "asc" },
-    select: {
-      measurementTs: true,
-      watts: true,
-      kwh: true,
-      channel: { select: { displayName: true, assignedGroupId: true } },
+    orderBy: { billingPeriodEnd: "desc" },
+    include: {
+      items: {
+        orderBy: { groupType: "asc" },
+      },
     },
   })
 
-  // Aggregate by timestamp
-  const timeMap = new Map<string, number>()
-  for (const m of measurements) {
-    const key = m.measurementTs.toISOString()
-    timeMap.set(key, (timeMap.get(key) ?? 0) + (m.watts ?? 0))
+  // Get available years from existing records
+  const yearRecords = await prisma.billingRecord.findMany({
+    where: { propertyId: selectedPropertyId },
+    select: { billingPeriodEnd: true },
+    distinct: ["billingPeriodEnd"],
+  })
+
+  const availableYears = [
+    ...new Set(yearRecords.map((r) => r.billingPeriodEnd.getFullYear())),
+  ].sort((a, b) => b - a)
+
+  // Always include current year
+  if (!availableYears.includes(now.getFullYear())) {
+    availableYears.unshift(now.getFullYear())
   }
 
-  const chartData = Array.from(timeMap.entries())
-    .map(([timestamp, value]) => ({
-      timestamp: new Date(timestamp).toLocaleString(),
-      value: Math.round(value),
-    }))
-    .sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-    )
+  // Serialize dates for client component
+  const serializedRecords: BillingRecordData[] = records.map((r) => ({
+    id: r.id,
+    billingPeriodStart: r.billingPeriodStart.toISOString(),
+    billingPeriodEnd: r.billingPeriodEnd.toISOString(),
+    billingClosingDay: r.billingClosingDay,
+    totalConsumptionKwh: r.totalConsumptionKwh,
+    monthlyInvoiceAmount: r.monthlyInvoiceAmount,
+    commonAreaSplit: r.commonAreaSplit,
+    createdAt: r.createdAt.toISOString(),
+    items: r.items.map((item) => ({
+      id: item.id,
+      groupName: item.groupName,
+      groupType: item.groupType,
+      kwh: item.kwh,
+      percentage: item.percentage,
+      toPay: item.toPay,
+      tenantName: item.tenantName,
+    })),
+  }))
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/landlord" className="text-muted-foreground hover:text-foreground">
-            &larr; Dashboard
-          </Link>
-          <h2 className="text-xl font-bold">
-            {property.propertyName} - History
-          </h2>
-        </div>
-        <div className="flex gap-2">
-          {["24h", "7d", "30d"].map((p) => (
-            <Link
-              key={p}
-              href={`/landlord/history?period=${p}`}
-              className={`px-3 py-1 rounded text-sm ${
-                period === p
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-accent"
-              }`}
-            >
-              {p}
-            </Link>
-          ))}
-        </div>
+      <div className="flex items-center gap-4">
+        <Link
+          href={`/landlord?propertyId=${selectedPropertyId}`}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          &larr; Dashboard
+        </Link>
+        <h2 className="text-xl font-bold">
+          {property.propertyName} — Billing History
+        </h2>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Consumption (W)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {chartData.length > 0 ? (
-            <ConsumptionChart data={chartData} />
-          ) : (
-            <p className="text-center text-muted-foreground py-8">
-              No data for this period.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <BillingHistory
+        records={serializedRecords}
+        propertyId={selectedPropertyId}
+        propertyName={property.propertyName}
+        selectedYear={selectedYear}
+        selectedMonth={selectedMonth}
+        availableYears={availableYears}
+      />
     </div>
   )
 }

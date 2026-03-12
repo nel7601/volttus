@@ -201,25 +201,25 @@ export function LandlordDashboard({
       </div>
 
       {/* Summary strip */}
-      <Card>
-        <CardContent className="py-4">
+      <Card className="shadow-md ring-1 ring-sky-200/60 dark:ring-sky-800/40">
+        <CardContent className="py-5">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Total consumption */}
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Total Consumption</p>
+            <div className="space-y-1 border-r border-border/50 last:border-r-0 pr-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Consumption</p>
               <p className="text-2xl font-bold text-sky-600">
                 {totalIncomeKwh.toFixed(3)}
                 <span className="text-xs font-normal text-muted-foreground ml-1">kWh</span>
               </p>
             </div>
             {/* Monthly invoice */}
-            <div className="space-y-1">
+            <div className="space-y-1 border-r border-border/50 last:border-r-0 pr-4">
               <div className="flex items-center gap-1.5">
-                <p className="text-xs text-muted-foreground">Monthly Invoice</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Invoice</p>
                 <Dialog open={invoiceEditOpen} onOpenChange={setInvoiceEditOpen}>
                   <DialogTrigger
                     render={
-                      <button className="text-muted-foreground/50 hover:text-muted-foreground">
+                      <button className="text-muted-foreground/60 hover:text-foreground">
                         <Pencil className="h-3 w-3" />
                       </button>
                     }
@@ -237,13 +237,13 @@ export function LandlordDashboard({
               </p>
             </div>
             {/* Billing closing day */}
-            <div className="space-y-1">
+            <div className="space-y-1 border-r border-border/50 last:border-r-0 pr-4">
               <div className="flex items-center gap-1.5">
-                <p className="text-xs text-muted-foreground">Billing Closing</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Billing Closing</p>
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
                   <DialogTrigger
                     render={
-                      <button className="text-muted-foreground/50 hover:text-muted-foreground">
+                      <button className="text-muted-foreground/60 hover:text-foreground">
                         <Pencil className="h-3 w-3" />
                       </button>
                     }
@@ -254,11 +254,11 @@ export function LandlordDashboard({
                   />
                 </Dialog>
               </div>
-              <p className="text-sm font-medium mt-1">{closingDate}</p>
+              <p className="text-sm font-semibold mt-1">{closingDate}</p>
             </div>
             {/* Common area split */}
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Cost Distribution</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cost Distribution</p>
               <Select
                 value={property.commonAreaSplit}
                 onValueChange={handleSplitChange}
@@ -281,12 +281,12 @@ export function LandlordDashboard({
       </Card>
 
       {/* Groups table */}
-      <Card>
+      <Card className="shadow-md ring-1 ring-sky-200/60 dark:ring-sky-800/40">
         <CardContent className="px-0 sm:px-6 pt-4">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-sky-50/50 dark:bg-sky-500/5">
+                <TableRow className="bg-sky-100/60 dark:bg-sky-500/10 border-b border-sky-200/80 dark:border-sky-800/30">
                   <TableHead>Name</TableHead>
                   <TableHead className="text-right">kWh</TableHead>
                   <TableHead className="text-right">%</TableHead>
@@ -305,7 +305,7 @@ export function LandlordDashboard({
                   const isApartment = group.groupType === "APARTMENT"
 
                   return (
-                    <TableRow key={group.id} className="hover:bg-sky-50/30 dark:hover:bg-sky-500/5">
+                    <TableRow key={group.id} className="border-b border-border/40 hover:bg-sky-50/50 dark:hover:bg-sky-500/10">
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span
@@ -325,11 +325,11 @@ export function LandlordDashboard({
                           className={
                             isApartment
                               ? pct > 30
-                                ? "border-emerald-600/30 text-emerald-700 bg-emerald-500/10"
-                                : "border-emerald-500/30 text-emerald-600 bg-emerald-500/5"
+                                ? "border-emerald-500/50 text-emerald-700 bg-emerald-500/15"
+                                : "border-emerald-400/40 text-emerald-600 bg-emerald-500/10"
                               : pct > 30
-                                ? "border-amber-600/30 text-amber-700 bg-amber-500/10"
-                                : "border-amber-500/30 text-amber-600 bg-amber-500/5"
+                                ? "border-amber-500/50 text-amber-700 bg-amber-500/15"
+                                : "border-amber-400/40 text-amber-600 bg-amber-500/10"
                           }
                         >
                           {pct.toFixed(1)}%
@@ -379,7 +379,7 @@ export function LandlordDashboard({
       </Card>
 
       {/* Bar chart */}
-      <Card>
+      <Card className="shadow-md ring-1 ring-sky-200/60 dark:ring-sky-800/40">
         <CardContent className="pt-4">
           {chartData.length > 0 ? (
             <>

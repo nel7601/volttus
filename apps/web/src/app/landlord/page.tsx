@@ -55,12 +55,15 @@ export default async function LandlordPage({
 
   const lastClosingDate = getLastClosingDate(property.billingClosingDay)
 
-  // Fetch only groups that have at least one enabled channel assigned
+  // Fetch groups with enabled channels OR virtual groups (no channels needed)
   const groups = await prisma.channelGroup.findMany({
     where: {
       propertyId: property.id,
       isActive: true,
-      channels: { some: { isEnabled: true } },
+      OR: [
+        { channels: { some: { isEnabled: true } } },
+        { isVirtual: true },
+      ],
     },
     orderBy: { displayOrder: "asc" },
     include: {
@@ -110,6 +113,22 @@ export default async function LandlordPage({
     ? groupConsumption[incomeGroup.id] ?? 0
     : 0
 
+  // Calculate virtual group consumption:
+  // Virtual consumption = Income - sum of all non-virtual, non-income groups
+  const virtualGroups = groups.filter((g) => g.isVirtual)
+  if (virtualGroups.length > 0) {
+    const sumNonVirtualConsumption = groups
+      .filter((g) => !g.isVirtual && g.groupType !== "INCOME")
+      .reduce((sum, g) => sum + (groupConsumption[g.id] ?? 0), 0)
+
+    const remainingKwh = Math.max(0, totalIncomeKwh - sumNonVirtualConsumption)
+    const perVirtualKwh = remainingKwh / virtualGroups.length
+
+    for (const vg of virtualGroups) {
+      groupConsumption[vg.id] = perVirtualKwh
+    }
+  }
+
   // Fetch tenants that belong to this landlord's properties
   const landlordPropertyIds = landlord.properties.map((p) => p.id)
   const tenants = await prisma.user.findMany({
@@ -153,6 +172,7 @@ export default async function LandlordPage({
     groupType: g.groupType,
     apartmentNumber: g.apartmentNumber,
     consumptionKwh: groupConsumption[g.id] ?? 0,
+    isVirtual: g.isVirtual,
     tenant: g.tenants[0]
       ? { id: g.tenants[0].id, fullName: g.tenants[0].fullName }
       : null,
@@ -173,6 +193,7 @@ export default async function LandlordPage({
       name: g.groupName,
       kwh: groupConsumption[g.id] ?? 0,
       type: g.groupType,
+      isVirtual: g.isVirtual,
     })
   }
 

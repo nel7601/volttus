@@ -22,6 +22,7 @@ interface GroupCardProps {
     groupType: string
     apartmentNumber: string | null
     displayOrder: number
+    isVirtual: boolean
     channels: { id: string }[]
     tenants: { fullName: string }[]
     _count: { groupMeasurements: number }
@@ -40,6 +41,13 @@ export function GroupCard({ group, propertyId, typeColors }: GroupCardProps) {
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [groupType, setGroupType] = useState(group.groupType)
+  const [isVirtual, setIsVirtual] = useState(group.isVirtual)
+
+  function handleTypeChange(value: string | null) {
+    const v = value || ""
+    setGroupType(v)
+    if (v === "INCOME") setIsVirtual(false)
+  }
 
   if (editing) {
     return (
@@ -61,7 +69,8 @@ export function GroupCard({ group, propertyId, typeColors }: GroupCardProps) {
             <div className="w-40">
               <label className="text-xs text-muted-foreground">Type</label>
               <input type="hidden" name="groupType" value={groupType} />
-              <Select value={groupType} onValueChange={setGroupType}>
+              <input type="hidden" name="isVirtual" value={String(isVirtual)} />
+              <Select value={groupType} onValueChange={handleTypeChange}>
                 <SelectTrigger>
                   <SelectValue>
                     {typeLabels[groupType] || groupType}
@@ -90,6 +99,20 @@ export function GroupCard({ group, propertyId, typeColors }: GroupCardProps) {
                 defaultValue={group.displayOrder}
               />
             </div>
+            {(groupType === "COMMON" || groupType === "APARTMENT") && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id={`virtual-${group.id}`}
+                  checked={isVirtual}
+                  onChange={(e) => setIsVirtual(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                <label htmlFor={`virtual-${group.id}`} className="text-xs text-muted-foreground">
+                  Virtual
+                </label>
+              </div>
+            )}
             <Button type="submit" size="icon" variant="ghost" className="text-green-600 hover:text-green-700">
               <Check className="h-4 w-4" />
             </Button>
@@ -115,6 +138,9 @@ export function GroupCard({ group, propertyId, typeColors }: GroupCardProps) {
           <Badge className={typeColors[group.groupType] || ""}>
             {group.groupType}
           </Badge>
+          {group.isVirtual && (
+            <Badge className="bg-purple-100 text-purple-800">Virtual</Badge>
+          )}
           <span className="font-medium">{group.groupName}</span>
           {group.apartmentNumber && (
             <span className="text-sm text-muted-foreground">
@@ -123,7 +149,7 @@ export function GroupCard({ group, propertyId, typeColors }: GroupCardProps) {
           )}
         </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{group.channels.length} channels</span>
+          <span>{group.isVirtual ? "No channels (virtual)" : `${group.channels.length} channels`}</span>
           {group.tenants.length > 0 && (
             <span>
               Tenant: {group.tenants.map((t) => t.fullName).join(", ")}

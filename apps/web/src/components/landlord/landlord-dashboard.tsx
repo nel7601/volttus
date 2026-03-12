@@ -69,6 +69,7 @@ export interface GroupData {
   groupType: "INCOME" | "COMMON" | "APARTMENT"
   apartmentNumber: string | null
   consumptionKwh: number
+  isVirtual: boolean
   tenant: { id: string; fullName: string } | null
 }
 
@@ -84,7 +85,7 @@ export interface DashboardProps {
   selectedPropertyId: string
   groups: GroupData[]
   totalIncomeKwh: number
-  chartData: Array<{ name: string; kwh: number; type: string }>
+  chartData: Array<{ name: string; kwh: number; type: string; isVirtual?: boolean }>
   tenants: TenantOption[]
 }
 
@@ -330,10 +331,18 @@ export function LandlordDashboard({
                           }`}
                         />
                         <span className="font-medium">{group.groupName}</span>
+                        {group.isVirtual && (
+                          <Badge variant="outline" className="text-[10px] border-purple-300 text-purple-600 ml-1">
+                            Virtual
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-mono">
                       {group.consumptionKwh.toFixed(3)}
+                      {group.isVirtual && (
+                        <span className="text-[10px] text-muted-foreground ml-1">(calc)</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <Badge

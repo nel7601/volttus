@@ -23,7 +23,11 @@ export const groupSchema = z.object({
   apartmentNumber: z.string().optional(),
   displayOrder: z.coerce.number().default(0),
   propertyId: z.string().min(1),
-})
+  isVirtual: z.coerce.boolean().default(false),
+}).refine(
+  (data) => !data.isVirtual || data.groupType !== "INCOME",
+  { message: "INCOME groups cannot be virtual", path: ["isVirtual"] }
+)
 
 export const userSchema = z.object({
   email: z.string().email(),

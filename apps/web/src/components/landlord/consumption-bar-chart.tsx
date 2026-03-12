@@ -12,7 +12,7 @@ import {
 } from "recharts"
 
 interface BarChartProps {
-  data: Array<{ name: string; kwh: number; type: string }>
+  data: Array<{ name: string; kwh: number; type: string; isVirtual?: boolean }>
 }
 
 const COLORS: Record<string, string> = {
@@ -51,7 +51,7 @@ export function ConsumptionBarChart({ data }: BarChartProps) {
         />
         <Bar dataKey="kwh" radius={[6, 6, 0, 0]} maxBarSize={60}>
           {data.map((entry, index) => (
-            <Cell key={index} fill={COLORS[entry.type] ?? "#94a3b8"} />
+            <Cell key={index} fill={COLORS[entry.type] ?? "#94a3b8"} opacity={entry.isVirtual ? 0.6 : 1} />
           ))}
         </Bar>
       </BarChart>

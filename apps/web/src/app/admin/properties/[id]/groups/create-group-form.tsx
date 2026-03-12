@@ -23,6 +23,12 @@ const typeLabels: Record<string, string> = {
 
 export function CreateGroupForm({ propertyId }: { propertyId: string }) {
   const [groupType, setGroupType] = useState("")
+  const [isVirtual, setIsVirtual] = useState(false)
+
+  function handleTypeChange(value: string | null) {
+    setGroupType(value || "")
+    if (value === "INCOME") setIsVirtual(false)
+  }
 
   return (
     <Card>
@@ -39,7 +45,7 @@ export function CreateGroupForm({ propertyId }: { propertyId: string }) {
           <div className="space-y-1 w-40">
             <Label className="text-xs">Type</Label>
             <input type="hidden" name="groupType" value={groupType} />
-            <Select value={groupType} onValueChange={setGroupType} required>
+            <Select value={groupType} onValueChange={handleTypeChange} required>
               <SelectTrigger>
                 <SelectValue placeholder="Type">
                   {groupType ? typeLabels[groupType] : undefined}
@@ -60,6 +66,19 @@ export function CreateGroupForm({ propertyId }: { propertyId: string }) {
             <Label className="text-xs">Order</Label>
             <Input name="displayOrder" type="number" defaultValue="0" />
           </div>
+          {(groupType === "COMMON" || groupType === "APARTMENT") && (
+            <div className="flex items-center gap-2 pb-1">
+              <input type="hidden" name="isVirtual" value={String(isVirtual)} />
+              <input
+                type="checkbox"
+                id="isVirtual"
+                checked={isVirtual}
+                onChange={(e) => setIsVirtual(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="isVirtual" className="text-xs">Virtual</Label>
+            </div>
+          )}
           <Button type="submit" size="sm">
             <Plus className="h-4 w-4 mr-1" />
             Add

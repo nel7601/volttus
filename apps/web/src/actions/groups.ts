@@ -15,6 +15,7 @@ export async function createGroup(formData: FormData) {
     apartmentNumber: formData.get("apartmentNumber") || undefined,
     displayOrder: formData.get("displayOrder") || 0,
     propertyId: formData.get("propertyId"),
+    isVirtual: formData.get("isVirtual") === "true",
   })
 
   await prisma.channelGroup.create({ data: parsed })
@@ -27,14 +28,25 @@ export async function updateGroup(formData: FormData) {
 
   const id = formData.get("id") as string
   const propertyId = formData.get("propertyId") as string
+  const isVirtual = formData.get("isVirtual") === "true"
+  const groupType = formData.get("groupType") as "INCOME" | "COMMON" | "APARTMENT"
+
+  // If switching to virtual, unassign all channels from this group
+  if (isVirtual) {
+    await prisma.channel.updateMany({
+      where: { assignedGroupId: id },
+      data: { assignedGroupId: null },
+    })
+  }
 
   await prisma.channelGroup.update({
     where: { id },
     data: {
       groupName: formData.get("groupName") as string,
-      groupType: formData.get("groupType") as "INCOME" | "COMMON" | "APARTMENT",
+      groupType,
       apartmentNumber: (formData.get("apartmentNumber") as string) || null,
       displayOrder: Number(formData.get("displayOrder")) || 0,
+      isVirtual: groupType === "INCOME" ? false : isVirtual,
     },
   })
 

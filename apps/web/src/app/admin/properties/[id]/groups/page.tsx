@@ -3,7 +3,6 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/select"
 import { createGroup } from "@/actions/groups"
 import { Plus } from "lucide-react"
+import { GroupCard } from "./group-card"
 
 export const dynamic = "force-dynamic"
 export default async function GroupsPage({
@@ -98,30 +98,12 @@ export default async function GroupsPage({
 
       <div className="grid gap-3">
         {property.channelGroups.map((group) => (
-          <Card key={group.id}>
-            <CardContent className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-3">
-                <Badge className={groupTypeColors[group.groupType] || ""}>
-                  {group.groupType}
-                </Badge>
-                <span className="font-medium">{group.groupName}</span>
-                {group.apartmentNumber && (
-                  <span className="text-sm text-muted-foreground">
-                    (Apt #{group.apartmentNumber})
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>{group.channels.length} channels</span>
-                {group.tenants.length > 0 && (
-                  <span>
-                    Tenant: {group.tenants.map((t) => t.user.fullName).join(", ")}
-                  </span>
-                )}
-                <span>Order: {group.displayOrder}</span>
-              </div>
-            </CardContent>
-          </Card>
+          <GroupCard
+            key={group.id}
+            group={group}
+            propertyId={id}
+            typeColors={groupTypeColors}
+          />
         ))}
         {property.channelGroups.length === 0 && (
           <p className="text-center text-muted-foreground py-8">

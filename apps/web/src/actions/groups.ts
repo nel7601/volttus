@@ -21,9 +21,49 @@ export async function createGroup(formData: FormData) {
   revalidatePath(`/admin/properties/${parsed.propertyId}/groups`)
 }
 
-export async function deleteGroup(id: string, propertyId: string) {
+export async function updateGroup(formData: FormData) {
   const session = await getSession()
   if (session?.role !== "ADMIN") throw new Error("Unauthorized")
+
+  const id = formData.get("id") as string
+  const propertyId = formData.get("propertyId") as string
+
+  await prisma.channelGroup.update({
+    where: { id },
+    data: {
+      groupName: formData.get("groupName") as string,
+      groupType: formData.get("groupType") as "INCOME" | "COMMON" | "APARTMENT",
+      apartmentNumber: (formData.get("apartmentNumber") as string) || null,
+      displayOrder: Number(formData.get("displayOrder")) || 0,
+    },
+  })
+
+  revalidatePath(`/admin/properties/${propertyId}/groups`)
+}
+
+export async function deleteGroup(formData: FormData) {
+  const session = await getSession()
+  if (session?.role !== "ADMIN") throw new Error("Unauthorized")
+
+  const id = formData.get("id") as string
+  const propertyId = formData.get("propertyId") as string
+
+  // Unassign any channels from this group
+  await prisma.channel.updateMany({
+    where: { assignedGroupId: id },
+    data: { assignedGroupId: null },
+  })
+
+  // Check if group has tenants assigned
+  const tenantCount = await prisma.tenant.count({
+    where: { apartmentGroupId: id },
+  })
+
+  if (tenantCount > 0) {
+    throw new Error(
+      `Cannot delete group: ${tenantCount} tenant(s) are assigned to it. Remove tenants first.`
+    )
+  }
 
   await prisma.channelGroup.delete({ where: { id } })
   revalidatePath(`/admin/properties/${propertyId}/groups`)

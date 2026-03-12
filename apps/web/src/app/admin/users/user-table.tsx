@@ -32,7 +32,13 @@ interface UserData {
 interface Property {
   id: string
   propertyName: string
+  landlordId: string
   channelGroups: { id: string; groupName: string }[]
+}
+
+interface Landlord {
+  id: string
+  fullName: string
 }
 
 const roles = ["ALL", "ADMIN", "LANDLORD", "TENANT"] as const
@@ -47,9 +53,11 @@ const roleBadgeColors: Record<string, string> = {
 export function UserTable({
   users,
   properties,
+  landlords,
 }: {
   users: UserData[]
   properties: Property[]
+  landlords: Landlord[]
 }) {
   const [search, setSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("ALL")
@@ -173,6 +181,7 @@ export function UserTable({
                         key={u.id}
                         user={u}
                         properties={properties}
+                        landlords={landlords}
                       />
                     ))}
                   </>
@@ -185,7 +194,7 @@ export function UserTable({
             {tableHeader}
             <TableBody>
               {filtered.map((u) => (
-                <UserRow key={u.id} user={u} properties={properties} />
+                <UserRow key={u.id} user={u} properties={properties} landlords={landlords} />
               ))}
             </TableBody>
           </Table>

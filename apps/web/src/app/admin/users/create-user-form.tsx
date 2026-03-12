@@ -18,7 +18,13 @@ import { Plus } from "lucide-react"
 interface Property {
   id: string
   propertyName: string
+  landlordId: string
   channelGroups: { id: string; groupName: string }[]
+}
+
+interface Landlord {
+  id: string
+  fullName: string
 }
 
 const roleLabels: Record<string, string> = {
@@ -27,19 +33,44 @@ const roleLabels: Record<string, string> = {
   TENANT: "Tenant",
 }
 
-export function CreateUserForm({ properties }: { properties: Property[] }) {
+export function CreateUserForm({
+  properties,
+  landlords,
+}: {
+  properties: Property[]
+  landlords: Landlord[]
+}) {
   const [role, setRole] = useState("")
+  const [landlordId, setLandlordId] = useState("")
   const [propertyId, setPropertyId] = useState("")
   const [apartmentGroupId, setApartmentGroupId] = useState("")
 
-  const selectedProperty = properties.find((p) => p.id === propertyId)
-  const allGroups = properties.flatMap((p) =>
-    p.channelGroups.map((g) => ({
-      id: g.id,
-      label: `${p.propertyName} - ${g.groupName}`,
-    }))
-  )
-  const selectedGroup = allGroups.find((g) => g.id === apartmentGroupId)
+  // Filter properties by selected landlord
+  const filteredProperties = landlordId
+    ? properties.filter((p) => p.landlordId === landlordId)
+    : properties
+
+  const selectedProperty = filteredProperties.find((p) => p.id === propertyId)
+  const selectedLandlord = landlords.find((l) => l.id === landlordId)
+
+  const groups = selectedProperty
+    ? selectedProperty.channelGroups.map((g) => ({
+        id: g.id,
+        label: g.groupName,
+      }))
+    : []
+  const selectedGroup = groups.find((g) => g.id === apartmentGroupId)
+
+  function handleLandlordChange(value: string | null) {
+    setLandlordId(value || "")
+    setPropertyId("")
+    setApartmentGroupId("")
+  }
+
+  function handlePropertyChange(value: string | null) {
+    setPropertyId(value || "")
+    setApartmentGroupId("")
+  }
 
   return (
     <Card>
@@ -66,7 +97,16 @@ export function CreateUserForm({ properties }: { properties: Property[] }) {
           <div className="space-y-1">
             <Label className="text-xs">Role</Label>
             <input type="hidden" name="role" value={role} />
-            <Select value={role} onValueChange={setRole} required>
+            <Select
+              value={role}
+              onValueChange={(v: string | null) => {
+                setRole(v || "")
+                setLandlordId("")
+                setPropertyId("")
+                setApartmentGroupId("")
+              }}
+              required
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select role">
                   {role ? roleLabels[role] : undefined}
@@ -95,12 +135,38 @@ export function CreateUserForm({ properties }: { properties: Property[] }) {
 
           {role === "TENANT" && (
             <>
+              {/* Landlord selector */}
+              <div className="space-y-1">
+                <Label className="text-xs">Landlord</Label>
+                <Select
+                  value={landlordId}
+                  onValueChange={handleLandlordChange}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select landlord">
+                      {selectedLandlord
+                        ? selectedLandlord.fullName
+                        : undefined}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {landlords.map((l) => (
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.fullName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Property selector (filtered by landlord) */}
               <div className="space-y-1">
                 <Label className="text-xs">Property</Label>
                 <input type="hidden" name="propertyId" value={propertyId} />
                 <Select
                   value={propertyId}
-                  onValueChange={setPropertyId}
+                  onValueChange={handlePropertyChange}
                   required
                 >
                   <SelectTrigger>
@@ -111,7 +177,7 @@ export function CreateUserForm({ properties }: { properties: Property[] }) {
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {properties.map((p) => (
+                    {filteredProperties.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.propertyName}
                       </SelectItem>
@@ -119,6 +185,8 @@ export function CreateUserForm({ properties }: { properties: Property[] }) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Apartment group selector (filtered by property) */}
               <div className="space-y-1">
                 <Label className="text-xs">Apartment Group</Label>
                 <input
@@ -128,7 +196,7 @@ export function CreateUserForm({ properties }: { properties: Property[] }) {
                 />
                 <Select
                   value={apartmentGroupId}
-                  onValueChange={setApartmentGroupId}
+                  onValueChange={(v: string | null) => setApartmentGroupId(v || "")}
                   required
                 >
                   <SelectTrigger>
@@ -137,7 +205,7 @@ export function CreateUserForm({ properties }: { properties: Property[] }) {
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {allGroups.map((g) => (
+                    {groups.map((g) => (
                       <SelectItem key={g.id} value={g.id}>
                         {g.label}
                       </SelectItem>

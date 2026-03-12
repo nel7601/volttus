@@ -50,10 +50,31 @@ export async function updateUser(formData: FormData) {
   const phone = (formData.get("phone") as string) || null
   const propertyId = (formData.get("propertyId") as string) || null
   const apartmentGroupId = (formData.get("apartmentGroupId") as string) || null
+  const newPassword = (formData.get("newPassword") as string) || null
+  const isActiveStr = formData.get("isActive") as string | null
+
+  const data: Record<string, unknown> = {
+    fullName,
+    email,
+    companyName,
+    phone,
+    propertyId,
+    apartmentGroupId,
+  }
+
+  // Handle password change
+  if (newPassword && newPassword.length >= 6) {
+    data.passwordHash = await bcrypt.hash(newPassword, 10)
+  }
+
+  // Handle active/inactive toggle
+  if (isActiveStr !== null) {
+    data.isActive = isActiveStr === "true"
+  }
 
   await prisma.user.update({
     where: { id },
-    data: { fullName, email, companyName, phone, propertyId, apartmentGroupId },
+    data,
   })
 
   revalidatePath("/admin/users")

@@ -24,20 +24,25 @@ export default async function UsersPage() {
     }),
   ])
 
+  const landlords = users
+    .filter((u) => u.role === "LANDLORD" && u.isActive)
+    .map((u) => ({ id: u.id, fullName: u.fullName }))
+
+  const propertiesData = properties.map((p) => ({
+    id: p.id,
+    propertyName: p.propertyName,
+    landlordId: p.landlordId,
+    channelGroups: p.channelGroups.map((g) => ({
+      id: g.id,
+      groupName: g.groupName,
+    })),
+  }))
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Users</h1>
 
-      <CreateUserForm
-        properties={properties.map((p) => ({
-          id: p.id,
-          propertyName: p.propertyName,
-          channelGroups: p.channelGroups.map((g) => ({
-            id: g.id,
-            groupName: g.groupName,
-          })),
-        }))}
-      />
+      <CreateUserForm properties={propertiesData} landlords={landlords} />
 
       <UserTable
         users={users.map((u) => ({
@@ -52,14 +57,8 @@ export default async function UsersPage() {
           apartmentGroupName: u.apartmentGroup?.groupName ?? null,
           propertyCount: u._count.properties,
         }))}
-        properties={properties.map((p) => ({
-          id: p.id,
-          propertyName: p.propertyName,
-          channelGroups: p.channelGroups.map((g) => ({
-            id: g.id,
-            groupName: g.groupName,
-          })),
-        }))}
+        properties={propertiesData}
+        landlords={landlords}
       />
     </div>
   )

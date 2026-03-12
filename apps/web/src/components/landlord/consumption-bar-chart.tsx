@@ -51,7 +51,7 @@ export function ConsumptionBarChart({ data }: BarChartProps) {
         />
         <Bar dataKey="kwh" radius={[6, 6, 0, 0]} maxBarSize={60}>
           {data.map((entry, index) => (
-            <Cell key={index} fill={COLORS[entry.type] ?? "#94a3b8"} opacity={entry.isVirtual ? 0.6 : 1} />
+            <Cell key={index} fill={COLORS[entry.type] ?? "#94a3b8"} />
           ))}
         </Bar>
       </BarChart>

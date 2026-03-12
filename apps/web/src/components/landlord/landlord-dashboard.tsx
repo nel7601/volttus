@@ -32,14 +32,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
-  Building2,
   MapPin,
-  CalendarDays,
   Pencil,
   Zap,
   UserPlus,
   History,
-  Receipt,
   BarChart3,
 } from "lucide-react"
 import { ConsumptionBarChart } from "./consumption-bar-chart"
@@ -166,123 +163,81 @@ export function LandlordDashboard({
         </Link>
       </div>
 
-      {/* Billing settings card — full width */}
-      <Card className="border-l-4 border-l-sky-600">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
-              <Building2 className="h-4 w-4 text-sky-600" />
-            </div>
-            Billing Settings
-          </CardTitle>
-          <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogTrigger
-              render={
-                <Button variant="ghost" size="icon-sm">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              }
-            />
-            <EditBillingDialog
-              property={property}
-              onClose={() => setEditOpen(false)}
-            />
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Billing closing day */}
-            <div className="flex items-start gap-3 rounded-lg bg-sky-50/50 dark:bg-sky-500/5 p-3">
-              <CalendarDays className="h-4 w-4 mt-0.5 text-sky-500" />
-              <div>
-                <p className="text-xs text-muted-foreground">
-                  Billing Closing Date
-                </p>
-                <p className="text-sm font-medium">{closingDate}</p>
-              </div>
-            </div>
-            {/* Common area split selector */}
-            <div className="flex items-start gap-3 rounded-lg bg-sky-50/50 dark:bg-sky-500/5 p-3">
-              <div className="flex-1">
-                <p className="text-xs text-muted-foreground mb-1.5">
-                  Common Area Cost Distribution
-                </p>
-                <Select
-                  value={property.commonAreaSplit}
-                  onValueChange={handleSplitChange}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue>
-                      {property.commonAreaSplit === "EQUAL"
-                        ? "Split equally among all apartments"
-                        : "Split by consumption percentage"}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EQUAL">
-                      Split equally among all apartments
-                    </SelectItem>
-                    <SelectItem value="PROPORTIONAL">
-                      Split by consumption percentage
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Consumption card — full width */}
-      <Card className="border-l-4 border-l-sky-400">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
-              <Zap className="h-4 w-4 text-sky-500" />
-            </div>
-            Consumption
-          </CardTitle>
-          <Dialog open={invoiceEditOpen} onOpenChange={setInvoiceEditOpen}>
-            <DialogTrigger
-              render={
-                <Button variant="ghost" size="icon-sm">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              }
-            />
-            <EditInvoiceDialog
-              property={property}
-              onClose={() => setInvoiceEditOpen(false)}
-            />
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Summary strip */}
+      <Card>
+        <CardContent className="py-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Total consumption */}
-            <div className="rounded-lg bg-sky-500/5 border border-sky-500/20 p-4">
-              <p className="text-xs text-muted-foreground">
-                Total Consumption (Income)
-              </p>
-              <p className="text-3xl font-bold text-sky-600">
-                {totalIncomeKwh.toFixed(3)}{" "}
-                <span className="text-base font-medium text-muted-foreground">
-                  kWh
-                </span>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Total Consumption</p>
+              <p className="text-2xl font-bold text-sky-600">
+                {totalIncomeKwh.toFixed(3)}
+                <span className="text-xs font-normal text-muted-foreground ml-1">kWh</span>
               </p>
             </div>
             {/* Monthly invoice */}
-            <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Receipt className="h-3.5 w-3.5 text-amber-500" />
-                <p className="text-xs text-muted-foreground">
-                  Monthly Invoice Amount
-                </p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">Monthly Invoice</p>
+                <Dialog open={invoiceEditOpen} onOpenChange={setInvoiceEditOpen}>
+                  <DialogTrigger
+                    render={
+                      <button className="text-muted-foreground/50 hover:text-muted-foreground">
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    }
+                  />
+                  <EditInvoiceDialog
+                    property={property}
+                    onClose={() => setInvoiceEditOpen(false)}
+                  />
+                </Dialog>
               </div>
-              <p className="text-3xl font-bold text-amber-600">
+              <p className="text-2xl font-bold text-amber-600">
                 {property.monthlyInvoiceAmount !== null
                   ? `$${property.monthlyInvoiceAmount.toFixed(2)}`
-                  : "Not set"}
+                  : "—"}
               </p>
+            </div>
+            {/* Billing closing day */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">Billing Closing</p>
+                <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                  <DialogTrigger
+                    render={
+                      <button className="text-muted-foreground/50 hover:text-muted-foreground">
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    }
+                  />
+                  <EditBillingDialog
+                    property={property}
+                    onClose={() => setEditOpen(false)}
+                  />
+                </Dialog>
+              </div>
+              <p className="text-sm font-medium mt-1">{closingDate}</p>
+            </div>
+            {/* Common area split */}
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Cost Distribution</p>
+              <Select
+                value={property.commonAreaSplit}
+                onValueChange={handleSplitChange}
+              >
+                <SelectTrigger className="h-8 text-xs mt-1">
+                  <SelectValue>
+                    {property.commonAreaSplit === "EQUAL"
+                      ? "Equal split"
+                      : "By consumption"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EQUAL">Equal split</SelectItem>
+                  <SelectItem value="PROPORTIONAL">By consumption</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
@@ -331,18 +286,10 @@ export function LandlordDashboard({
                           }`}
                         />
                         <span className="font-medium">{group.groupName}</span>
-                        {group.isVirtual && (
-                          <Badge variant="outline" className="text-[10px] border-purple-300 text-purple-600 ml-1">
-                            Virtual
-                          </Badge>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-mono">
                       {group.consumptionKwh.toFixed(3)}
-                      {group.isVirtual && (
-                        <span className="text-[10px] text-muted-foreground ml-1">(calc)</span>
-                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <Badge

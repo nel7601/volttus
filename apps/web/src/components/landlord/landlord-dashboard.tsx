@@ -130,27 +130,30 @@ export function LandlordDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Top bar: property selector + history button */}
+      {/* Top bar: property selector by address + history button */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Label className="text-sm font-medium text-muted-foreground">
-            Property
-          </Label>
+          <MapPin className="h-4 w-4 text-sky-500" />
           <Select
             value={selectedPropertyId}
             onValueChange={handlePropertyChange}
           >
-            <SelectTrigger className="w-[250px]">
-              <SelectValue placeholder={property.propertyName}>
-                {property.propertyName}
+            <SelectTrigger className="w-[400px]">
+              <SelectValue placeholder={address}>
+                {address}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {properties.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.propertyName}
-                </SelectItem>
-              ))}
+              {properties.map((p) => {
+                const addr = [p.addressLine1, p.addressLine2, p.city]
+                  .filter(Boolean)
+                  .join(", ")
+                return (
+                  <SelectItem key={p.id} value={p.id}>
+                    {addr}
+                  </SelectItem>
+                )
+              })}
             </SelectContent>
           </Select>
         </div>
@@ -162,106 +165,98 @@ export function LandlordDashboard({
         </Link>
       </div>
 
-      {/* Property info + Consumption cards */}
-      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
-        {/* Left card: property details (60%) */}
-        <Card className="border-l-4 border-l-sky-600">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
-                <Building2 className="h-4 w-4 text-sky-600" />
-              </div>
-              {property.propertyName}
-            </CardTitle>
-            <Dialog open={editOpen} onOpenChange={setEditOpen}>
-              <DialogTrigger
-                render={
-                  <Button variant="ghost" size="icon-sm">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                }
-              />
-              <EditPropertyDialog
-                property={property}
-                onClose={() => setEditOpen(false)}
-              />
-            </Dialog>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Address */}
-              <div className="flex items-start gap-3 rounded-lg bg-sky-50/50 dark:bg-sky-500/5 p-3">
-                <MapPin className="h-4 w-4 mt-0.5 text-sky-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Address</p>
-                  <p className="text-sm font-medium">{address}</p>
-                </div>
-              </div>
-              {/* Billing closing day */}
-              <div className="flex items-start gap-3 rounded-lg bg-sky-50/50 dark:bg-sky-500/5 p-3">
-                <CalendarDays className="h-4 w-4 mt-0.5 text-sky-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">
-                    Billing Closing Date
-                  </p>
-                  <p className="text-sm font-medium">{closingDate}</p>
-                </div>
+      {/* Billing settings card — full width */}
+      <Card className="border-l-4 border-l-sky-600">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
+              <Building2 className="h-4 w-4 text-sky-600" />
+            </div>
+            Billing Settings
+          </CardTitle>
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogTrigger
+              render={
+                <Button variant="ghost" size="icon-sm">
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              }
+            />
+            <EditBillingDialog
+              property={property}
+              onClose={() => setEditOpen(false)}
+            />
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Billing closing day */}
+            <div className="flex items-start gap-3 rounded-lg bg-sky-50/50 dark:bg-sky-500/5 p-3">
+              <CalendarDays className="h-4 w-4 mt-0.5 text-sky-500" />
+              <div>
+                <p className="text-xs text-muted-foreground">
+                  Billing Closing Date
+                </p>
+                <p className="text-sm font-medium">{closingDate}</p>
               </div>
             </div>
-
             {/* Common area split selector */}
-            <div className="mt-5 rounded-lg border border-sky-500/20 bg-sky-500/5 p-4">
-              <p className="text-sm font-medium mb-2">
-                Common Area Cost Distribution
-              </p>
-              <Select
-                value={property.commonAreaSplit}
-                onValueChange={handleSplitChange}
-              >
-                <SelectTrigger className="w-[350px]">
-                  <SelectValue>
-                    {property.commonAreaSplit === "EQUAL"
-                      ? "Split equally among all apartments"
-                      : "Split by consumption percentage"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EQUAL">
-                    Split equally among all apartments
-                  </SelectItem>
-                  <SelectItem value="PROPORTIONAL">
-                    Split by consumption percentage
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Right card: consumption + invoice (40%) */}
-        <Card className="border-l-4 border-l-sky-400">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
-                <Zap className="h-4 w-4 text-sky-500" />
+            <div className="flex items-start gap-3 rounded-lg bg-sky-50/50 dark:bg-sky-500/5 p-3">
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground mb-1.5">
+                  Common Area Cost Distribution
+                </p>
+                <Select
+                  value={property.commonAreaSplit}
+                  onValueChange={handleSplitChange}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      {property.commonAreaSplit === "EQUAL"
+                        ? "Split equally among all apartments"
+                        : "Split by consumption percentage"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EQUAL">
+                      Split equally among all apartments
+                    </SelectItem>
+                    <SelectItem value="PROPORTIONAL">
+                      Split by consumption percentage
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              Consumption
-            </CardTitle>
-            <Dialog open={invoiceEditOpen} onOpenChange={setInvoiceEditOpen}>
-              <DialogTrigger
-                render={
-                  <Button variant="ghost" size="icon-sm">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                }
-              />
-              <EditInvoiceDialog
-                property={property}
-                onClose={() => setInvoiceEditOpen(false)}
-              />
-            </Dialog>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Consumption card — full width */}
+      <Card className="border-l-4 border-l-sky-400">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
+              <Zap className="h-4 w-4 text-sky-500" />
+            </div>
+            Consumption
+          </CardTitle>
+          <Dialog open={invoiceEditOpen} onOpenChange={setInvoiceEditOpen}>
+            <DialogTrigger
+              render={
+                <Button variant="ghost" size="icon-sm">
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              }
+            />
+            <EditInvoiceDialog
+              property={property}
+              onClose={() => setInvoiceEditOpen(false)}
+            />
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Total consumption */}
             <div className="rounded-lg bg-sky-500/5 border border-sky-500/20 p-4">
               <p className="text-xs text-muted-foreground">
@@ -288,9 +283,9 @@ export function LandlordDashboard({
                   : "Not set"}
               </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Groups table */}
       <Card>
@@ -570,7 +565,7 @@ function TenantAssignDialog({
   )
 }
 
-function EditPropertyDialog({
+function EditBillingDialog({
   property,
   onClose,
 }: {
@@ -583,49 +578,18 @@ function EditPropertyDialog({
   }
 
   return (
-    <DialogContent className="sm:max-w-md">
+    <DialogContent className="sm:max-w-sm">
       <DialogHeader>
-        <DialogTitle>Edit Property</DialogTitle>
+        <DialogTitle>Edit Billing Settings</DialogTitle>
       </DialogHeader>
       <form action={handleSubmit}>
         <input type="hidden" name="propertyId" value={property.id} />
+        {/* Send current values so the action doesn't clear them */}
+        <input type="hidden" name="propertyName" value={property.propertyName} />
+        <input type="hidden" name="addressLine1" value={property.addressLine1} />
+        <input type="hidden" name="addressLine2" value={property.addressLine2 ?? ""} />
+        <input type="hidden" name="city" value={property.city} />
         <div className="space-y-4 py-2">
-          <div>
-            <Label htmlFor="propertyName">Property Name</Label>
-            <Input
-              id="propertyName"
-              name="propertyName"
-              defaultValue={property.propertyName}
-              placeholder="Property name"
-            />
-          </div>
-          <div>
-            <Label htmlFor="addressLine1">Address</Label>
-            <Input
-              id="addressLine1"
-              name="addressLine1"
-              defaultValue={property.addressLine1}
-              placeholder="Address line 1"
-            />
-          </div>
-          <div>
-            <Label htmlFor="addressLine2">Address Line 2</Label>
-            <Input
-              id="addressLine2"
-              name="addressLine2"
-              defaultValue={property.addressLine2 ?? ""}
-              placeholder="Apt, suite, etc. (optional)"
-            />
-          </div>
-          <div>
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              name="city"
-              defaultValue={property.city}
-              placeholder="City"
-            />
-          </div>
           <div>
             <Label htmlFor="billingClosingDay">
               Billing Closing Day (1-31)

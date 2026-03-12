@@ -48,12 +48,6 @@ export async function deleteGroup(formData: FormData) {
   const id = formData.get("id") as string
   const propertyId = formData.get("propertyId") as string
 
-  // Unassign any channels from this group
-  await prisma.channel.updateMany({
-    where: { assignedGroupId: id },
-    data: { assignedGroupId: null },
-  })
-
   // Check if group has tenants assigned
   const tenantCount = await prisma.tenant.count({
     where: { apartmentGroupId: id },
@@ -64,6 +58,17 @@ export async function deleteGroup(formData: FormData) {
       `Cannot delete group: ${tenantCount} tenant(s) are assigned to it. Remove tenants first.`
     )
   }
+
+  // Delete group measurements first (FK constraint)
+  await prisma.groupMeasurement.deleteMany({
+    where: { groupId: id },
+  })
+
+  // Unassign any channels from this group
+  await prisma.channel.updateMany({
+    where: { assignedGroupId: id },
+    data: { assignedGroupId: null },
+  })
 
   await prisma.channelGroup.delete({ where: { id } })
   revalidatePath(`/admin/properties/${propertyId}/groups`)

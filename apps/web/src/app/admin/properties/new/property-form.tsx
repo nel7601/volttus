@@ -18,7 +18,8 @@ import { useState } from "react"
 
 interface Landlord {
   id: string
-  user: { fullName: string; email: string }
+  fullName: string
+  email: string
 }
 
 export function PropertyForm({ landlords }: { landlords: Landlord[] }) {
@@ -52,14 +53,14 @@ export function PropertyForm({ landlords }: { landlords: Landlord[] }) {
               <SelectTrigger>
                 <SelectValue placeholder="Select a landlord">
                   {selectedLandlord
-                    ? `${selectedLandlord.user.fullName} (${selectedLandlord.user.email})`
+                    ? `${selectedLandlord.fullName} (${selectedLandlord.email})`
                     : undefined}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {landlords.map((l) => (
                   <SelectItem key={l.id} value={l.id}>
-                    {l.user.fullName} ({l.user.email})
+                    {l.fullName} ({l.email})
                   </SelectItem>
                 ))}
               </SelectContent>

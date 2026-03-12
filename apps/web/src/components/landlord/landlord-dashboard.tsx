@@ -357,7 +357,7 @@ export function LandlordDashboard({
                           </span>
                         )}
                         <Link
-                          href={`/admin/tenants?propertyId=${selectedPropertyId}&groupId=${group.id}`}
+                          href={`/admin/users?propertyId=${selectedPropertyId}&groupId=${group.id}`}
                         >
                           <Button
                             variant="ghost"

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { createProperty } from "@/actions/properties"
-import { createLandlord } from "@/actions/landlords"
+import { createUser } from "@/actions/users"
 import { createEmporiaAccount } from "@/actions/emporia-accounts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,8 +11,8 @@ import { PropertyForm } from "./property-form"
 
 export const dynamic = "force-dynamic"
 export default async function NewPropertyPage() {
-  const landlords = await prisma.landlord.findMany({
-    include: { user: true },
+  const landlords = await prisma.user.findMany({
+    where: { role: "LANDLORD", isActive: true },
   })
 
   return (
@@ -34,7 +34,8 @@ export default async function NewPropertyPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 You need at least one landlord before creating a property.
               </p>
-              <form action={createLandlord} className="space-y-4">
+              <form action={createUser} className="space-y-4">
+                <input type="hidden" name="role" value="LANDLORD" />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="fullName">Full Name</Label>

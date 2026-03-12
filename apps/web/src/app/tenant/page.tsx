@@ -18,8 +18,8 @@ export default async function TenantDashboard() {
   const session = await getSession()
   if (!session) redirect("/login")
 
-  const tenant = await prisma.tenant.findUnique({
-    where: { userId: session.id },
+  const tenant = await prisma.user.findUnique({
+    where: { id: session.id },
     include: {
       property: true,
       apartmentGroup: {
@@ -38,7 +38,7 @@ export default async function TenantDashboard() {
     },
   })
 
-  if (!tenant) {
+  if (!tenant || !tenant.apartmentGroup) {
     return (
       <div className="py-16 text-center text-muted-foreground">
         Your account is not assigned to any apartment yet.

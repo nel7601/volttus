@@ -34,8 +34,8 @@ export default async function LandlordPage({
   const session = await getSession()
   if (!session) redirect("/login")
 
-  const landlord = await prisma.landlord.findUnique({
-    where: { userId: session.id },
+  const landlord = await prisma.user.findUnique({
+    where: { id: session.id },
     include: { properties: true },
   })
 
@@ -64,7 +64,7 @@ export default async function LandlordPage({
     orderBy: { displayOrder: "asc" },
     include: {
       tenants: {
-        include: { user: { select: { fullName: true } } },
+        select: { id: true, fullName: true },
         take: 1,
       },
     },
@@ -129,7 +129,7 @@ export default async function LandlordPage({
     apartmentNumber: g.apartmentNumber,
     consumptionKwh: groupConsumption[g.id] ?? 0,
     tenant: g.tenants[0]
-      ? { id: g.tenants[0].id, fullName: g.tenants[0].user.fullName }
+      ? { id: g.tenants[0].id, fullName: g.tenants[0].fullName }
       : null,
   }))
 

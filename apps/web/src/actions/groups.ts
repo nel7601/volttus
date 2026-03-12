@@ -49,8 +49,8 @@ export async function deleteGroup(formData: FormData) {
   const propertyId = formData.get("propertyId") as string
 
   // Check if group has tenants assigned
-  const tenantCount = await prisma.tenant.count({
-    where: { apartmentGroupId: id },
+  const tenantCount = await prisma.user.count({
+    where: { apartmentGroupId: id, role: "TENANT" },
   })
 
   if (tenantCount > 0) {

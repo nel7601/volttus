@@ -18,7 +18,7 @@ export default async function GroupsPage({
         orderBy: { displayOrder: "asc" },
         include: {
           channels: true,
-          tenants: { include: { user: true } },
+          tenants: { select: { fullName: true } },
           _count: { select: { groupMeasurements: true } },
         },
       },

@@ -16,8 +16,8 @@ export default async function LandlordHistoryPage({
 
   const { period = "24h" } = await searchParams
 
-  const landlord = await prisma.landlord.findUnique({
-    where: { userId: session.id },
+  const landlord = await prisma.user.findUnique({
+    where: { id: session.id },
     include: { properties: true },
   })
 

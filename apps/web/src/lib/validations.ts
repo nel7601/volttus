@@ -25,12 +25,17 @@ export const groupSchema = z.object({
   propertyId: z.string().min(1),
 })
 
-export const tenantSchema = z.object({
+export const userSchema = z.object({
   email: z.string().email(),
   fullName: z.string().min(1, "Name is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  propertyId: z.string().min(1),
-  apartmentGroupId: z.string().min(1, "Apartment group is required"),
+  role: z.enum(["ADMIN", "LANDLORD", "TENANT"]),
+  // Landlord fields
+  companyName: z.string().optional(),
+  phone: z.string().optional(),
+  // Tenant fields
+  propertyId: z.string().optional(),
+  apartmentGroupId: z.string().optional(),
 })
 
 export const emporiaAccountSchema = z.object({

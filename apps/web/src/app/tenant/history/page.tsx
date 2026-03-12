@@ -16,8 +16,8 @@ export default async function TenantHistoryPage({
 
   const { period = "24h" } = await searchParams
 
-  const tenant = await prisma.tenant.findUnique({
-    where: { userId: session.id },
+  const tenant = await prisma.user.findUnique({
+    where: { id: session.id },
     include: {
       apartmentGroup: {
         include: { channels: { where: { isEnabled: true } } },
@@ -25,7 +25,7 @@ export default async function TenantHistoryPage({
     },
   })
 
-  if (!tenant) {
+  if (!tenant || !tenant.apartmentGroup) {
     return <div className="py-16 text-center text-muted-foreground">No apartment assigned.</div>
   }
 

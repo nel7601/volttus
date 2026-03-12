@@ -38,48 +38,31 @@ enum CommonAreaSplit {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  fullName     String   @map("full_name")
-  role         Role
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  landlord Landlord?
-  tenant   Tenant?
-
-  @@map("users")
-}
-
-model Landlord {
-  id          String   @id @default(cuid())
-  userId      String   @unique @map("user_id")
-  companyName String?  @map("company_name")
-  phone       String?
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  properties Property[]
-
-  @@map("landlords")
-}
-
-model Tenant {
   id               String    @id @default(cuid())
-  userId           String    @unique @map("user_id")
-  propertyId       String    @map("property_id")
-  apartmentGroupId String    @map("apartment_group_id")
+  email            String    @unique
+  passwordHash     String    @map("password_hash")
+  fullName         String    @map("full_name")
+  role             Role
+  isActive         Boolean   @default(true) @map("is_active")
+  // Landlord fields
+  companyName      String?   @map("company_name")
+  phone            String?
+  // Tenant fields
+  propertyId       String?   @map("property_id")
+  apartmentGroupId String?   @map("apartment_group_id")
   leaseStartDate   DateTime? @map("lease_start_date")
   leaseEndDate     DateTime? @map("lease_end_date")
+
   createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  property       Property     @relation(fields: [propertyId], references: [id])
-  apartmentGroup ChannelGroup @relation(fields: [apartmentGroupId], references: [id])
+  // Landlord: properties they own
+  properties       Property[]    @relation("LandlordProperties")
+  // Tenant: assigned property & apartment
+  property         Property?     @relation("TenantProperty", fields: [propertyId], references: [id])
+  apartmentGroup   ChannelGroup? @relation(fields: [apartmentGroupId], references: [id])
 
-  @@map("tenants")
+  @@map("users")
 }
 
 model Property {
@@ -100,12 +83,12 @@ model Property {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  landlord        Landlord         @relation(fields: [landlordId], references: [id])
+  landlord        User             @relation("LandlordProperties", fields: [landlordId], references: [id])
   emporiaAccount  EmporiaAccount?
   devices         Device[]
   channelGroups   ChannelGroup[]
   channels        Channel[]
-  tenants         Tenant[]
+  tenants         User[]           @relation("TenantProperty")
   measurements    Measurement[]
   ingestionRuns   IngestionRun[]
   ingestionErrors IngestionError[]
@@ -165,7 +148,7 @@ model ChannelGroup {
 
   property          Property           @relation(fields: [propertyId], references: [id])
   channels          Channel[]
-  tenants           Tenant[]
+  tenants           User[]
   groupMeasurements GroupMeasurement[]
 
   @@map("channel_groups")

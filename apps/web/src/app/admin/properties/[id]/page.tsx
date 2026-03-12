@@ -18,11 +18,11 @@ export default async function PropertyDetailPage({
   const property = await prisma.property.findUnique({
     where: { id },
     include: {
-      landlord: { include: { user: true } },
+      landlord: true,
       emporiaAccount: true,
       devices: { include: { channels: true } },
       channelGroups: { orderBy: { displayOrder: "asc" } },
-      tenants: { include: { user: true, apartmentGroup: true } },
+      tenants: { include: { apartmentGroup: true } },
     },
   })
 
@@ -50,7 +50,7 @@ export default async function PropertyDetailPage({
             <p>
               {property.city}, {property.country}
             </p>
-            <p>Landlord: {property.landlord.user.fullName}</p>
+            <p>Landlord: {property.landlord.fullName}</p>
             <p>Timezone: {property.timezone}</p>
           </CardContent>
         </Card>

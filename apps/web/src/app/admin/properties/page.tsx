@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic"
 export default async function PropertiesPage() {
   const properties = await prisma.property.findMany({
     include: {
-      landlord: { include: { user: true } },
+      landlord: true,
       emporiaAccount: true,
       devices: true,
       channelGroups: true,
@@ -69,7 +69,7 @@ export default async function PropertiesPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>Landlord: {property.landlord.user.fullName}</span>
+                  <span>Landlord: {property.landlord.fullName}</span>
                   <span className="mx-2">|</span>
                   <Link
                     href={`/admin/properties/${property.id}/groups`}

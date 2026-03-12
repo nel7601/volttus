@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 export default async function AdminDashboard() {
   const [propertyCount, tenantCount, deviceCount, lastRun] = await Promise.all([
     prisma.property.count(),
-    prisma.tenant.count(),
+    prisma.user.count({ where: { role: "TENANT" } }),
     prisma.device.count(),
     prisma.ingestionRun.findFirst({
       orderBy: { startedAt: "desc" },

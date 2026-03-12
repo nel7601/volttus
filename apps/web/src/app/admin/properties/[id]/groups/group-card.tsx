@@ -23,7 +23,7 @@ interface GroupCardProps {
     apartmentNumber: string | null
     displayOrder: number
     channels: { id: string }[]
-    tenants: { user: { fullName: string } }[]
+    tenants: { fullName: string }[]
     _count: { groupMeasurements: number }
   }
   propertyId: string
@@ -126,7 +126,7 @@ export function GroupCard({ group, propertyId, typeColors }: GroupCardProps) {
           <span>{group.channels.length} channels</span>
           {group.tenants.length > 0 && (
             <span>
-              Tenant: {group.tenants.map((t) => t.user.fullName).join(", ")}
+              Tenant: {group.tenants.map((t) => t.fullName).join(", ")}
             </span>
           )}
           <span>Order: {group.displayOrder}</span>

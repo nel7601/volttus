@@ -17,7 +17,7 @@ import { logoutAction } from "@/actions/auth"
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: BarChart3 },
   { href: "/admin/properties", label: "Properties", icon: Building2 },
-  { href: "/admin/tenants", label: "Tenants", icon: Users },
+  { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/ingestion", label: "Ingestion", icon: Plug },
 ]
 

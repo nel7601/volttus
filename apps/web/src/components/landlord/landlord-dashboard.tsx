@@ -47,6 +47,8 @@ import {
   updatePropertyDetails,
   updateMonthlyInvoice,
   updateCommonAreaSplit,
+  assignTenantToGroup,
+  removeTenantFromGroup,
 } from "@/actions/property-settings"
 
 export interface PropertyData {
@@ -70,12 +72,20 @@ export interface GroupData {
   tenant: { id: string; fullName: string } | null
 }
 
+export interface TenantOption {
+  id: string
+  fullName: string
+  email: string
+  apartmentGroupId: string | null
+}
+
 export interface DashboardProps {
   properties: PropertyData[]
   selectedPropertyId: string
   groups: GroupData[]
   totalIncomeKwh: number
   chartData: Array<{ name: string; kwh: number; type: string }>
+  tenants: TenantOption[]
 }
 
 export function LandlordDashboard({
@@ -84,11 +94,15 @@ export function LandlordDashboard({
   groups,
   totalIncomeKwh,
   chartData,
+  tenants,
 }: DashboardProps) {
   const router = useRouter()
   const property = properties.find((p) => p.id === selectedPropertyId)!
   const [editOpen, setEditOpen] = useState(false)
   const [invoiceEditOpen, setInvoiceEditOpen] = useState(false)
+  const [tenantDialogGroup, setTenantDialogGroup] = useState<GroupData | null>(
+    null
+  )
 
   const displayGroups = groups.filter(
     (g) => g.groupType === "APARTMENT" || g.groupType === "COMMON"
@@ -356,9 +370,7 @@ export function LandlordDashboard({
                             No tenant
                           </span>
                         )}
-                        <Link
-                          href={`/admin/users?propertyId=${selectedPropertyId}&groupId=${group.id}`}
-                        >
+                        {isApartment && (
                           <Button
                             variant="ghost"
                             size="icon-xs"
@@ -367,6 +379,7 @@ export function LandlordDashboard({
                                 ? "text-muted-foreground hover:text-foreground"
                                 : "text-sky-500 hover:text-sky-600 hover:bg-sky-500/10"
                             }
+                            onClick={() => setTenantDialogGroup(group)}
                           >
                             {group.tenant ? (
                               <Pencil className="h-3 w-3" />
@@ -374,7 +387,7 @@ export function LandlordDashboard({
                               <UserPlus className="h-3 w-3" />
                             )}
                           </Button>
-                        </Link>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -424,7 +437,136 @@ export function LandlordDashboard({
           )}
         </CardContent>
       </Card>
+
+      {/* Tenant assignment dialog */}
+      <Dialog
+        open={tenantDialogGroup !== null}
+        onOpenChange={(open) => {
+          if (!open) setTenantDialogGroup(null)
+        }}
+      >
+        {tenantDialogGroup && (
+          <TenantAssignDialog
+            group={tenantDialogGroup}
+            tenants={tenants}
+            onClose={() => setTenantDialogGroup(null)}
+          />
+        )}
+      </Dialog>
     </div>
+  )
+}
+
+function TenantAssignDialog({
+  group,
+  tenants,
+  onClose,
+}: {
+  group: GroupData
+  tenants: TenantOption[]
+  onClose: () => void
+}) {
+  const [selectedTenantId, setSelectedTenantId] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  // Available tenants: those not assigned to any group, or already assigned to this group
+  const availableTenants = tenants.filter(
+    (t) => !t.apartmentGroupId || t.apartmentGroupId === group.id
+  )
+
+  const selectedTenant = availableTenants.find(
+    (t) => t.id === selectedTenantId
+  )
+
+  async function handleAssign() {
+    if (!selectedTenantId) return
+    setLoading(true)
+    await assignTenantToGroup(group.id, selectedTenantId)
+    setLoading(false)
+    onClose()
+  }
+
+  async function handleRemove() {
+    setLoading(true)
+    await removeTenantFromGroup(group.id)
+    setLoading(false)
+    onClose()
+  }
+
+  return (
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <UserPlus className="h-5 w-5 text-sky-500" />
+          {group.tenant ? "Change Tenant" : "Assign Tenant"} — {group.groupName}
+        </DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4 py-2">
+        {/* Current tenant info */}
+        {group.tenant && (
+          <div className="flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
+            <div>
+              <p className="text-xs text-muted-foreground">Current Tenant</p>
+              <p className="text-sm font-medium">{group.tenant.fullName}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={handleRemove}
+              disabled={loading}
+            >
+              Remove
+            </Button>
+          </div>
+        )}
+
+        {/* Tenant selector */}
+        <div className="space-y-2">
+          <Label className="text-sm">
+            {group.tenant ? "Replace with" : "Select Tenant"}
+          </Label>
+          {availableTenants.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic py-2">
+              No available tenants. Create a tenant first in the admin panel.
+            </p>
+          ) : (
+            <Select
+              value={selectedTenantId}
+              onValueChange={(v: string | null) =>
+                setSelectedTenantId(v || "")
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a tenant...">
+                  {selectedTenant ? selectedTenant.fullName : undefined}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {availableTenants.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.fullName}{" "}
+                    <span className="text-muted-foreground">({t.email})</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          className="bg-sky-500 hover:bg-sky-600 text-white"
+          onClick={handleAssign}
+          disabled={!selectedTenantId || loading}
+        >
+          {loading ? "Saving..." : "Assign Tenant"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
   )
 }
 

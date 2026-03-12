@@ -5,6 +5,7 @@ import {
   LandlordDashboard,
   type PropertyData,
   type GroupData,
+  type TenantOption,
 } from "@/components/landlord/landlord-dashboard"
 
 export const dynamic = "force-dynamic"
@@ -109,6 +110,30 @@ export default async function LandlordPage({
     ? groupConsumption[incomeGroup.id] ?? 0
     : 0
 
+  // Fetch tenants that belong to this landlord's properties
+  const landlordPropertyIds = landlord.properties.map((p) => p.id)
+  const tenants = await prisma.user.findMany({
+    where: {
+      role: "TENANT",
+      isActive: true,
+      propertyId: { in: landlordPropertyIds },
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      apartmentGroupId: true,
+    },
+    orderBy: { fullName: "asc" },
+  })
+
+  const tenantsData: TenantOption[] = tenants.map((t) => ({
+    id: t.id,
+    fullName: t.fullName,
+    email: t.email,
+    apartmentGroupId: t.apartmentGroupId,
+  }))
+
   // Build props
   const propertiesData: PropertyData[] = landlord.properties.map((p) => ({
     id: p.id,
@@ -158,6 +183,7 @@ export default async function LandlordPage({
       groups={groupsData}
       totalIncomeKwh={totalIncomeKwh}
       chartData={chartData}
+      tenants={tenantsData}
     />
   )
 }

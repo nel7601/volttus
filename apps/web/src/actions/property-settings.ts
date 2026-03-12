@@ -59,3 +59,48 @@ export async function updateCommonAreaSplit(
 
   revalidatePath("/landlord")
 }
+
+export async function assignTenantToGroup(groupId: string, tenantId: string) {
+  const session = await getSession()
+  if (!session || (session.role !== "ADMIN" && session.role !== "LANDLORD")) {
+    throw new Error("Unauthorized")
+  }
+
+  // Get the group to know its propertyId
+  const group = await prisma.channelGroup.findUnique({
+    where: { id: groupId },
+    select: { propertyId: true },
+  })
+  if (!group) throw new Error("Group not found")
+
+  // Clear any existing tenant on this group
+  await prisma.user.updateMany({
+    where: { apartmentGroupId: groupId },
+    data: { apartmentGroupId: null },
+  })
+
+  // Assign the new tenant to the group and property
+  await prisma.user.update({
+    where: { id: tenantId },
+    data: {
+      apartmentGroupId: groupId,
+      propertyId: group.propertyId,
+    },
+  })
+
+  revalidatePath("/landlord")
+}
+
+export async function removeTenantFromGroup(groupId: string) {
+  const session = await getSession()
+  if (!session || (session.role !== "ADMIN" && session.role !== "LANDLORD")) {
+    throw new Error("Unauthorized")
+  }
+
+  await prisma.user.updateMany({
+    where: { apartmentGroupId: groupId },
+    data: { apartmentGroupId: null },
+  })
+
+  revalidatePath("/landlord")
+}

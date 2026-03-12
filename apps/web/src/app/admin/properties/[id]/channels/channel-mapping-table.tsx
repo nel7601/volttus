@@ -136,16 +136,14 @@ export function ChannelMappingTable({
                       >
                         <SelectTrigger className="h-8">
                           <SelectValue>
-                            {sg
-                              ? `${sg.groupName} (${sg.groupType})`
-                              : "Unassigned"}
+                            {sg ? sg.groupName : "Unassigned"}
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">Unassigned</SelectItem>
                           {groups.map((g) => (
                             <SelectItem key={g.id} value={g.id}>
-                              {g.groupName} ({g.groupType})
+                              {g.groupName}
                             </SelectItem>
                           ))}
                         </SelectContent>

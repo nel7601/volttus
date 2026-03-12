@@ -205,7 +205,11 @@ export function LandlordDashboard({
                 onValueChange={handleSplitChange}
               >
                 <SelectTrigger className="w-[350px]">
-                  <SelectValue />
+                  <SelectValue>
+                    {property.commonAreaSplit === "EQUAL"
+                      ? "Split equally among all apartments"
+                      : "Split by consumption percentage"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="EQUAL">

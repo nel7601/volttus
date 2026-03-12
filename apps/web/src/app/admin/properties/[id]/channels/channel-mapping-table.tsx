@@ -120,28 +120,38 @@ export function ChannelMappingTable({
                   />
                 </TableCell>
                 <TableCell>
-                  <Select
-                    value={mappings[i].assignedGroupId || "none"}
-                    onValueChange={(v) =>
-                      updateMapping(
-                        i,
-                        "assignedGroupId",
-                        v === "none" ? null : v
-                      )
-                    }
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Unassigned</SelectItem>
-                      {groups.map((g) => (
-                        <SelectItem key={g.id} value={g.id}>
-                          {g.groupName} ({g.groupType})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    const gid = mappings[i].assignedGroupId
+                    const sg = gid ? groups.find((g) => g.id === gid) : null
+                    return (
+                      <Select
+                        value={gid || "none"}
+                        onValueChange={(v) =>
+                          updateMapping(
+                            i,
+                            "assignedGroupId",
+                            v === "none" ? null : v
+                          )
+                        }
+                      >
+                        <SelectTrigger className="h-8">
+                          <SelectValue>
+                            {sg
+                              ? `${sg.groupName} (${sg.groupType})`
+                              : "Unassigned"}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Unassigned</SelectItem>
+                          {groups.map((g) => (
+                            <SelectItem key={g.id} value={g.id}>
+                              {g.groupName} ({g.groupType})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )
+                  })()}
                 </TableCell>
                 <TableCell>
                   <input

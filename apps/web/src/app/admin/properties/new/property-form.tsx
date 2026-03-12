@@ -24,6 +24,8 @@ interface Landlord {
 export function PropertyForm({ landlords }: { landlords: Landlord[] }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [landlordId, setLandlordId] = useState("")
+  const selectedLandlord = landlords.find((l) => l.id === landlordId)
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
@@ -45,9 +47,14 @@ export function PropertyForm({ landlords }: { landlords: Landlord[] }) {
         <form action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="landlordId">Landlord</Label>
-            <Select name="landlordId" required>
+            <input type="hidden" name="landlordId" value={landlordId} />
+            <Select value={landlordId} onValueChange={setLandlordId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Select a landlord" />
+                <SelectValue placeholder="Select a landlord">
+                  {selectedLandlord
+                    ? `${selectedLandlord.user.fullName} (${selectedLandlord.user.email})`
+                    : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {landlords.map((l) => (

@@ -29,7 +29,7 @@ export async function middleware(req: NextRequest) {
   const isLoggedIn = !!session
 
   // Public routes
-  if (path === "/login" || path.startsWith("/api/auth") || path === "/api/debug-auth") {
+  if (path === "/login") {
     if (isLoggedIn && path === "/login") {
       const role = session.role
       if (role === "ADMIN") return NextResponse.redirect(new URL("/admin", req.url))

@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { updateGroup, deleteGroup } from "@/actions/groups"
-import { Pencil, Trash2, Check, X } from "lucide-react"
+import { Pencil, Trash2, Check, X, AlertTriangle } from "lucide-react"
 
 interface GroupCardProps {
   group: {
@@ -24,14 +24,22 @@ interface GroupCardProps {
     displayOrder: number
     channels: { id: string }[]
     tenants: { user: { fullName: string } }[]
+    _count: { groupMeasurements: number }
   }
   propertyId: string
   typeColors: Record<string, string>
 }
 
+const typeLabels: Record<string, string> = {
+  INCOME: "Income",
+  COMMON: "Common",
+  APARTMENT: "Apartment",
+}
+
 export function GroupCard({ group, propertyId, typeColors }: GroupCardProps) {
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [groupType, setGroupType] = useState(group.groupType)
 
   if (editing) {
     return (
@@ -52,9 +60,12 @@ export function GroupCard({ group, propertyId, typeColors }: GroupCardProps) {
             </div>
             <div className="w-40">
               <label className="text-xs text-muted-foreground">Type</label>
-              <Select name="groupType" defaultValue={group.groupType}>
+              <input type="hidden" name="groupType" value={groupType} />
+              <Select value={groupType} onValueChange={setGroupType}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    {typeLabels[groupType] || groupType}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="INCOME">Income</SelectItem>
@@ -130,8 +141,16 @@ export function GroupCard({ group, propertyId, typeColors }: GroupCardProps) {
           </Button>
 
           {deleting ? (
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-destructive">Delete?</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 rounded-md bg-destructive/10 px-2 py-1">
+                <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                <span className="text-xs text-destructive font-medium">
+                  Delete?
+                  {group._count.groupMeasurements > 0 && (
+                    <> {group._count.groupMeasurements} measurements will be lost</>
+                  )}
+                </span>
+              </div>
               <form action={deleteGroup}>
                 <input type="hidden" name="id" value={group.id} />
                 <input type="hidden" name="propertyId" value={propertyId} />

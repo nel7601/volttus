@@ -150,34 +150,36 @@ export function UserTable({
             No users match the current filters.
           </p>
         ) : grouped ? (
-          <div className="space-y-6">
-            {(["ADMIN", "LANDLORD", "TENANT"] as const).map((role) => {
-              const roleUsers = filtered.filter((u) => u.role === role)
-              if (roleUsers.length === 0) return null
-              return (
-                <div key={role}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className={roleBadgeColors[role]}>{role}</Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {roleUsers.length} user{roleUsers.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  <Table>
-                    {tableHeader}
-                    <TableBody>
-                      {roleUsers.map((u) => (
-                        <UserRow
-                          key={u.id}
-                          user={u}
-                          properties={properties}
-                        />
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )
-            })}
-          </div>
+          <Table>
+            {tableHeader}
+            <TableBody>
+              {(["ADMIN", "LANDLORD", "TENANT"] as const).map((role) => {
+                const roleUsers = filtered.filter((u) => u.role === role)
+                if (roleUsers.length === 0) return null
+                return (
+                  <>
+                    <TableRow key={`header-${role}`} className="bg-muted/50 hover:bg-muted/50">
+                      <TableCell colSpan={6} className="py-2">
+                        <div className="flex items-center gap-2">
+                          <Badge className={roleBadgeColors[role]}>{role}</Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {roleUsers.length} user{roleUsers.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {roleUsers.map((u) => (
+                      <UserRow
+                        key={u.id}
+                        user={u}
+                        properties={properties}
+                      />
+                    ))}
+                  </>
+                )
+              })}
+            </TableBody>
+          </Table>
         ) : (
           <Table>
             {tableHeader}

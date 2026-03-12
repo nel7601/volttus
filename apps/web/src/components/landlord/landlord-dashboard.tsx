@@ -106,6 +106,45 @@ export function LandlordDashboard({
     (g) => g.groupType === "APARTMENT" || g.groupType === "COMMON"
   )
 
+  const apartmentGroups = displayGroups.filter((g) => g.groupType === "APARTMENT")
+  const commonGroups = displayGroups.filter((g) => g.groupType === "COMMON")
+
+  // Total kWh consumed by common areas and apartments
+  const totalCommonKwh = commonGroups.reduce((sum, g) => sum + g.consumptionKwh, 0)
+  const totalApartmentKwh = apartmentGroups.reduce((sum, g) => sum + g.consumptionKwh, 0)
+
+  // Common area cost to distribute among apartments
+  const commonCost =
+    property.monthlyInvoiceAmount && totalIncomeKwh > 0
+      ? (totalCommonKwh / totalIncomeKwh) * property.monthlyInvoiceAmount
+      : 0
+
+  // Pre-compute "To Pay" for each group
+  function getGroupToPay(group: GroupData): number | null {
+    if (!property.monthlyInvoiceAmount || totalIncomeKwh <= 0) return null
+    if (group.groupType === "COMMON") return null
+
+    // Apartment's own consumption cost
+    const ownCost =
+      (group.consumptionKwh / totalIncomeKwh) * property.monthlyInvoiceAmount
+
+    // Share of common area cost
+    let commonShare = 0
+    if (commonCost > 0 && apartmentGroups.length > 0) {
+      if (property.commonAreaSplit === "EQUAL") {
+        commonShare = commonCost / apartmentGroups.length
+      } else {
+        // PROPORTIONAL: by apartment consumption
+        commonShare =
+          totalApartmentKwh > 0
+            ? commonCost * (group.consumptionKwh / totalApartmentKwh)
+            : 0
+      }
+    }
+
+    return ownCost + commonShare
+  }
+
   const address = [property.addressLine1, property.addressLine2, property.city]
     .filter(Boolean)
     .join(", ")
@@ -129,14 +168,14 @@ export function LandlordDashboard({
   return (
     <div className="space-y-6">
       {/* Top bar: property selector by address + history button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <MapPin className="h-4 w-4 text-sky-500" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <MapPin className="h-4 w-4 text-sky-500 shrink-0" />
           <Select
             value={selectedPropertyId}
             onValueChange={handlePropertyChange}
           >
-            <SelectTrigger className="w-[400px]">
+            <SelectTrigger className="w-full sm:max-w-[400px]">
               <SelectValue placeholder={address}>
                 {address}
               </SelectValue>
@@ -155,8 +194,8 @@ export function LandlordDashboard({
             </SelectContent>
           </Select>
         </div>
-        <Link href={`/landlord/history?propertyId=${selectedPropertyId}`}>
-          <Button className="bg-sky-500 text-white hover:bg-sky-600">
+        <Link href={`/landlord/history?propertyId=${selectedPropertyId}`} className="shrink-0">
+          <Button className="bg-sky-500 text-white hover:bg-sky-600 w-full sm:w-auto">
             <History className="h-4 w-4 mr-1" />
             View History
           </Button>
@@ -253,99 +292,99 @@ export function LandlordDashboard({
             Groups
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-sky-50/50 dark:bg-sky-500/5">
-                <TableHead>Name</TableHead>
-                <TableHead className="text-right">Consumption (kWh)</TableHead>
-                <TableHead className="text-right">%</TableHead>
-                <TableHead className="text-right">Total to Pay</TableHead>
-                <TableHead>Tenant</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {displayGroups.map((group) => {
-                const pct =
-                  totalIncomeKwh > 0
-                    ? (group.consumptionKwh * 100) / totalIncomeKwh
-                    : 0
-                const toPay = property.monthlyInvoiceAmount
-                  ? (pct / 100) * property.monthlyInvoiceAmount
-                  : null
+        <CardContent className="px-0 sm:px-6">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-sky-50/50 dark:bg-sky-500/5">
+                  <TableHead>Name</TableHead>
+                  <TableHead className="text-right">kWh</TableHead>
+                  <TableHead className="text-right">%</TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">To Pay</TableHead>
+                  <TableHead className="hidden md:table-cell">Tenant</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {displayGroups.map((group) => {
+                  const pct =
+                    totalIncomeKwh > 0
+                      ? (group.consumptionKwh * 100) / totalIncomeKwh
+                      : 0
+                  const toPay = getGroupToPay(group)
 
-                const isApartment = group.groupType === "APARTMENT"
+                  const isApartment = group.groupType === "APARTMENT"
 
-                return (
-                  <TableRow key={group.id} className="hover:bg-sky-50/30 dark:hover:bg-sky-500/5">
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full ${
-                            isApartment ? "bg-emerald-500" : "bg-amber-500"
-                          }`}
-                        />
-                        <span className="font-medium">{group.groupName}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {group.consumptionKwh.toFixed(3)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge
-                        variant="outline"
-                        className={
-                          isApartment
-                            ? pct > 30
-                              ? "border-emerald-600/30 text-emerald-700 bg-emerald-500/10"
-                              : "border-emerald-500/30 text-emerald-600 bg-emerald-500/5"
-                            : pct > 30
-                              ? "border-amber-600/30 text-amber-700 bg-amber-500/10"
-                              : "border-amber-500/30 text-amber-600 bg-amber-500/5"
-                        }
-                      >
-                        {pct.toFixed(1)}%
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-mono font-medium">
-                      {toPay !== null ? `$${toPay.toFixed(2)}` : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {group.tenant ? (
-                          <span className="text-sm">
-                            {group.tenant.fullName}
-                          </span>
-                        ) : (
-                          <span className="text-sm italic text-muted-foreground">
-                            No tenant
-                          </span>
-                        )}
-                        {isApartment && (
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            className={
-                              group.tenant
-                                ? "text-muted-foreground hover:text-foreground"
-                                : "text-sky-500 hover:text-sky-600 hover:bg-sky-500/10"
-                            }
-                            onClick={() => setTenantDialogGroup(group)}
-                          >
-                            {group.tenant ? (
-                              <Pencil className="h-3 w-3" />
-                            ) : (
-                              <UserPlus className="h-3 w-3" />
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+                  return (
+                    <TableRow key={group.id} className="hover:bg-sky-50/30 dark:hover:bg-sky-500/5">
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                              isApartment ? "bg-emerald-500" : "bg-amber-500"
+                            }`}
+                          />
+                          <span className="font-medium truncate max-w-[120px] sm:max-w-none">{group.groupName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs sm:text-sm">
+                        {group.consumptionKwh.toFixed(3)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge
+                          variant="outline"
+                          className={
+                            isApartment
+                              ? pct > 30
+                                ? "border-emerald-600/30 text-emerald-700 bg-emerald-500/10"
+                                : "border-emerald-500/30 text-emerald-600 bg-emerald-500/5"
+                              : pct > 30
+                                ? "border-amber-600/30 text-amber-700 bg-amber-500/10"
+                                : "border-amber-500/30 text-amber-600 bg-amber-500/5"
+                          }
+                        >
+                          {pct.toFixed(1)}%
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-medium hidden sm:table-cell">
+                        {toPay !== null ? `$${toPay.toFixed(2)}` : "-"}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex items-center gap-2">
+                          {group.tenant ? (
+                            <span className="text-sm">
+                              {group.tenant.fullName}
+                            </span>
+                          ) : (
+                            <span className="text-sm italic text-muted-foreground">
+                              No tenant
+                            </span>
+                          )}
+                          {isApartment && (
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              className={
+                                group.tenant
+                                  ? "text-muted-foreground hover:text-foreground"
+                                  : "text-sky-500 hover:text-sky-600 hover:bg-sky-500/10"
+                              }
+                              onClick={() => setTenantDialogGroup(group)}
+                            >
+                              {group.tenant ? (
+                                <Pencil className="h-3 w-3" />
+                              ) : (
+                                <UserPlus className="h-3 w-3" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -364,7 +403,7 @@ export function LandlordDashboard({
             <>
               <ConsumptionBarChart data={chartData} />
               {/* Legend */}
-              <div className="flex items-center justify-center gap-6 mt-4">
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-4">
                 <div className="flex items-center gap-1.5">
                   <span className="h-3 w-3 rounded-sm bg-sky-500" />
                   <span className="text-xs text-muted-foreground">Income</span>

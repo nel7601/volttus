@@ -175,8 +175,8 @@ export function LandlordSettings({
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-violet-500" />
-            <h3 className="text-sm font-semibold text-violet-700 dark:text-violet-400 uppercase tracking-wide">
+            <Users className="h-4 w-4 text-slate-500" />
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-400 uppercase tracking-wide">
               Tenants
             </h3>
           </div>
@@ -355,7 +355,7 @@ function TenantCard({
     <Card
       className={`${cardClass} ${
         tenant.isActive
-          ? "border-l-4 border-l-violet-500"
+          ? "border-l-4 border-l-slate-400"
           : "border-l-4 border-l-gray-300 opacity-60"
       }`}
     >
@@ -376,7 +376,7 @@ function TenantCard({
             </div>
             <p className="text-xs text-muted-foreground">{tenant.email}</p>
             {tenant.apartmentGroupName && (
-              <p className="text-xs text-violet-600 dark:text-violet-400 mt-1 font-medium">
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">
                 {tenant.apartmentGroupName}
               </p>
             )}
@@ -385,7 +385,7 @@ function TenantCard({
             <Button
               variant="ghost"
               size="icon-xs"
-              className="text-violet-400 hover:text-violet-600"
+              className="text-slate-400 hover:text-slate-600"
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5" />

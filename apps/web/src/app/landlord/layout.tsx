@@ -7,7 +7,7 @@ export default function LandlordLayout({
 }) {
   return (
     <div className="min-h-screen bg-muted/30">
-      <PortalHeader title="Volttus" subtitle="Landlord Portal" />
+      <PortalHeader title="Volttus" subtitle="Landlord Portal" settingsHref="/landlord/settings" />
       <main className="px-4 py-4 sm:p-6 max-w-6xl mx-auto">{children}</main>
     </div>
   )

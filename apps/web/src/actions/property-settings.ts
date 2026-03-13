@@ -23,6 +23,26 @@ export async function updatePropertyDetails(formData: FormData) {
   })
 
   revalidatePath("/landlord")
+  revalidatePath("/landlord/settings")
+}
+
+export async function updateLandlordProfile(formData: FormData) {
+  const session = await getSession()
+  if (!session || (session.role !== "ADMIN" && session.role !== "LANDLORD")) {
+    throw new Error("Unauthorized")
+  }
+
+  const fullName = formData.get("fullName") as string
+  const email = formData.get("email") as string
+  const companyName = (formData.get("companyName") as string) || null
+  const phone = (formData.get("phone") as string) || null
+
+  await prisma.user.update({
+    where: { id: session.id },
+    data: { fullName, email, companyName, phone },
+  })
+
+  revalidatePath("/landlord/settings")
 }
 
 export async function updateMonthlyInvoice(formData: FormData) {

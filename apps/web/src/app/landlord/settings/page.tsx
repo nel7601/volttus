@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import {
   LandlordSettings,
+  type SettingsLandlordData,
   type SettingsPropertyData,
   type SettingsTenantData,
   type SettingsGroupOption,
@@ -11,11 +12,7 @@ import {
 
 export const dynamic = "force-dynamic"
 
-export default async function LandlordSettingsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ propertyId?: string }>
-}) {
+export default async function LandlordSettingsPage() {
   const session = await getSession()
   if (!session) redirect("/login")
 
@@ -32,27 +29,32 @@ export default async function LandlordSettingsPage({
     )
   }
 
-  const params = await searchParams
-  const selectedPropertyId = params.propertyId ?? landlord.properties[0].id
-  const property = landlord.properties.find((p) => p.id === selectedPropertyId)
-  if (!property) redirect("/landlord/settings")
-
-  const propertyData: SettingsPropertyData = {
-    id: property.id,
-    propertyName: property.propertyName,
-    addressLine1: property.addressLine1,
-    addressLine2: property.addressLine2,
-    city: property.city,
-    billingClosingDay: property.billingClosingDay,
-    commonAreaSplit: property.commonAreaSplit,
-    monthlyInvoiceAmount: property.monthlyInvoiceAmount,
+  const landlordData: SettingsLandlordData = {
+    id: landlord.id,
+    fullName: landlord.fullName,
+    email: landlord.email,
+    companyName: landlord.companyName,
+    phone: landlord.phone,
   }
 
-  // Fetch all tenants for this property (active + archived)
+  const propertiesData: SettingsPropertyData[] = landlord.properties.map((p) => ({
+    id: p.id,
+    propertyName: p.propertyName,
+    addressLine1: p.addressLine1,
+    addressLine2: p.addressLine2,
+    city: p.city,
+    billingClosingDay: p.billingClosingDay,
+    commonAreaSplit: p.commonAreaSplit,
+    monthlyInvoiceAmount: p.monthlyInvoiceAmount,
+  }))
+
+  // Fetch all tenants across all landlord properties
+  const propertyIds = landlord.properties.map((p) => p.id)
+
   const tenants = await prisma.user.findMany({
     where: {
       role: "TENANT",
-      propertyId: property.id,
+      propertyId: { in: propertyIds },
     },
     include: {
       apartmentGroup: {
@@ -71,10 +73,10 @@ export default async function LandlordSettingsPage({
     apartmentGroupName: t.apartmentGroup?.groupName ?? null,
   }))
 
-  // Fetch apartment groups for assignment dropdown
+  // Fetch all apartment groups across all properties
   const groups = await prisma.channelGroup.findMany({
     where: {
-      propertyId: property.id,
+      propertyId: { in: propertyIds },
       groupType: "APARTMENT",
       isActive: true,
     },
@@ -91,18 +93,17 @@ export default async function LandlordSettingsPage({
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link
-          href={`/landlord?propertyId=${selectedPropertyId}`}
+          href="/landlord"
           className="text-muted-foreground hover:text-foreground"
         >
           &larr; Dashboard
         </Link>
-        <h2 className="text-xl font-bold">
-          {property.propertyName} — Settings
-        </h2>
+        <h2 className="text-xl font-bold">Settings</h2>
       </div>
 
       <LandlordSettings
-        property={propertyData}
+        landlord={landlordData}
+        properties={propertiesData}
         tenants={tenantsData}
         apartmentGroups={groupOptions}
       />

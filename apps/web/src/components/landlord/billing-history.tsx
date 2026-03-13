@@ -53,22 +53,8 @@ export interface BillingRecordItemData {
   tenantName: string | null
 }
 
-export interface CurrentPeriodData {
-  id: string
-  billingPeriodStart: string
-  billingPeriodEnd: string
-  billingClosingDay: number
-  totalConsumptionKwh: number
-  monthlyInvoiceAmount: number
-  commonAreaSplit: "EQUAL" | "PROPORTIONAL"
-  createdAt: string
-  isCurrent: true
-  items: BillingRecordItemData[]
-}
-
 interface BillingHistoryProps {
   records: BillingRecordData[]
-  currentPeriod: CurrentPeriodData | null
   propertyId: string
   propertyName: string
   selectedYear: number
@@ -78,7 +64,6 @@ interface BillingHistoryProps {
 
 export function BillingHistory({
   records,
-  currentPeriod,
   propertyId,
   propertyName,
   selectedYear,
@@ -218,13 +203,8 @@ export function BillingHistory({
         </Dialog>
       </div>
 
-      {/* Current period (live) */}
-      {currentPeriod && (
-        <CurrentPeriodCard record={currentPeriod} />
-      )}
-
       {/* Closed records */}
-      {records.length === 0 && !currentPeriod ? (
+      {records.length === 0 ? (
         <Card className="shadow-md ring-1 ring-sky-200/60 dark:ring-sky-800/40">
           <CardContent className="py-12 text-center text-muted-foreground">
             No billing records found for this period.
@@ -236,131 +216,6 @@ export function BillingHistory({
         ))
       )}
     </div>
-  )
-}
-
-function CurrentPeriodCard({ record }: { record: CurrentPeriodData }) {
-  const periodStart = new Date(record.billingPeriodStart).toLocaleDateString()
-  const today = new Date(record.billingPeriodEnd).toLocaleDateString()
-
-  return (
-    <Card className="shadow-md ring-1 ring-amber-300/60 dark:ring-amber-700/40 border-dashed border-amber-300 dark:border-amber-700">
-      <CardContent className="pt-4">
-        {/* Summary header */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4 pb-4 border-b border-border/50">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Period
-              </p>
-              <Badge className="bg-amber-500/15 text-amber-700 border-amber-400/40 text-[10px] px-1.5 py-0">
-                Current
-              </Badge>
-            </div>
-            <p className="text-sm font-semibold">
-              {periodStart} — {today}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Consumption so far
-            </p>
-            <p className="text-sm font-semibold text-sky-600">
-              {record.totalConsumptionKwh.toFixed(3)} kWh
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Invoice Amount
-            </p>
-            <p className="text-sm font-semibold text-amber-600">
-              ${record.monthlyInvoiceAmount.toFixed(2)}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Cost Distribution
-            </p>
-            <p className="text-sm font-semibold">
-              {record.commonAreaSplit === "EQUAL"
-                ? "Equal split"
-                : "By consumption"}
-            </p>
-            <p className="text-xs text-amber-600 font-medium">
-              Closes on day {record.billingClosingDay}
-            </p>
-          </div>
-        </div>
-
-        {/* Items table */}
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-amber-100/60 dark:bg-amber-500/10 border-b border-amber-200/80 dark:border-amber-800/30">
-                <TableHead>Name</TableHead>
-                <TableHead className="text-right">kWh</TableHead>
-                <TableHead className="text-right">%</TableHead>
-                <TableHead className="text-right hidden sm:table-cell">
-                  To Pay (est.)
-                </TableHead>
-                <TableHead className="hidden md:table-cell">Tenant</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {record.items.map((item) => {
-                const isApartment = item.groupType === "APARTMENT"
-                return (
-                  <TableRow
-                    key={item.id}
-                    className="border-b border-border/40 hover:bg-amber-50/50 dark:hover:bg-amber-500/10"
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full shrink-0 ${
-                            isApartment ? "bg-emerald-500" : "bg-amber-500"
-                          }`}
-                        />
-                        <span className="font-medium truncate max-w-[120px] sm:max-w-none">
-                          {item.groupName}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs sm:text-sm">
-                      {item.kwh.toFixed(3)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge
-                        variant="outline"
-                        className={
-                          isApartment
-                            ? "border-emerald-400/40 text-emerald-600 bg-emerald-500/10"
-                            : "border-amber-400/40 text-amber-600 bg-amber-500/10"
-                        }
-                      >
-                        {item.percentage.toFixed(1)}%
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-mono font-medium hidden sm:table-cell">
-                      {item.toPay !== null ? `$${item.toPay.toFixed(2)}` : "-"}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {item.tenantName ? (
-                        <span className="text-sm">{item.tenantName}</span>
-                      ) : (
-                        <span className="text-sm italic text-muted-foreground">
-                          —
-                        </span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
   )
 }
 

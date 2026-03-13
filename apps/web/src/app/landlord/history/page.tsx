@@ -6,7 +6,6 @@ import {
   BillingHistory,
   type BillingRecordData,
 } from "@/components/landlord/billing-history"
-import { computeCurrentPeriodData } from "@/lib/billing"
 
 export const dynamic = "force-dynamic"
 
@@ -84,9 +83,6 @@ export default async function LandlordHistoryPage({
     availableYears.unshift(now.getFullYear())
   }
 
-  // Compute current (open) period live data
-  const currentPeriod = await computeCurrentPeriodData(selectedPropertyId)
-
   // Serialize dates for client component
   const serializedRecords: BillingRecordData[] = records.map((r) => ({
     id: r.id,
@@ -124,7 +120,6 @@ export default async function LandlordHistoryPage({
 
       <BillingHistory
         records={serializedRecords}
-        currentPeriod={currentPeriod}
         propertyId={selectedPropertyId}
         propertyName={property.propertyName}
         selectedYear={selectedYear}

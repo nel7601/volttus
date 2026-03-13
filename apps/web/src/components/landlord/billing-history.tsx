@@ -242,25 +242,17 @@ function PeriodGroup({ record }: { record: BillingRecordData }) {
     })
   }
 
-  const periodLabel = `${formatDate(record.billingPeriodStart)} — ${formatDate(record.billingPeriodEnd)}`
+  const closingDate = formatDate(record.billingPeriodEnd)
 
   return (
     <>
-      {/* Period header row */}
-      <TableRow className="bg-slate-100/80 dark:bg-slate-800/40 border-t-2 border-slate-300/60 dark:border-slate-600/40 hover:bg-slate-100/80">
-        <TableCell colSpan={5} className="py-2.5">
-          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
-            {periodLabel}
-          </span>
-        </TableCell>
-      </TableRow>
-
       {/* Income row */}
-      <TableRow className="border-b-2 border-sky-200/80 dark:border-sky-800/30 bg-sky-50/40 dark:bg-sky-500/5">
+      <TableRow className="border-t-2 border-sky-200/80 dark:border-sky-800/30 bg-sky-50/40 dark:bg-sky-500/5">
         <TableCell>
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full shrink-0 bg-sky-500" />
             <span className="font-semibold">Income</span>
+            <span className="text-xs text-muted-foreground">({closingDate})</span>
           </div>
         </TableCell>
         <TableCell className="text-right font-mono text-sm font-semibold text-sky-600">

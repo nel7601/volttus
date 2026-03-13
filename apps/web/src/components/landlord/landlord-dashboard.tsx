@@ -201,7 +201,7 @@ export function LandlordDashboard({
       </div>
 
       {/* Summary strip */}
-      <Card className="shadow-md ring-1 ring-sky-200/60 dark:ring-sky-800/40">
+      <Card className="shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] dark:ring-white/[0.06] border-transparent">
         <CardContent className="py-5">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Total consumption */}
@@ -281,7 +281,7 @@ export function LandlordDashboard({
       </Card>
 
       {/* Groups table */}
-      <Card className="shadow-md ring-1 ring-sky-200/60 dark:ring-sky-800/40">
+      <Card className="shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] dark:ring-white/[0.06] border-transparent">
         <CardContent className="px-0 sm:px-6 pt-4">
           <div className="overflow-x-auto">
             <Table>
@@ -379,7 +379,7 @@ export function LandlordDashboard({
       </Card>
 
       {/* Bar chart */}
-      <Card className="shadow-md ring-1 ring-sky-200/60 dark:ring-sky-800/40">
+      <Card className="shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] dark:ring-white/[0.06] border-transparent">
         <CardContent className="pt-4">
           {chartData.length > 0 ? (
             <>

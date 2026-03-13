@@ -205,7 +205,7 @@ export function BillingHistory({
 
       {/* Closed records */}
       {records.length === 0 ? (
-        <Card className="shadow-md ring-1 ring-sky-200/60 dark:ring-sky-800/40">
+        <Card className="shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] dark:ring-white/[0.06] border-transparent">
           <CardContent className="py-12 text-center text-muted-foreground">
             No billing records found for this period.
           </CardContent>
@@ -225,7 +225,7 @@ function BillingRecordCard({ record }: { record: BillingRecordData }) {
   const createdAt = new Date(record.createdAt).toLocaleDateString()
 
   return (
-    <Card className="shadow-md ring-1 ring-sky-200/60 dark:ring-sky-800/40">
+    <Card className="shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] dark:ring-white/[0.06] border-transparent">
       <CardContent className="pt-4">
         {/* Summary header */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4 pb-4 border-b border-border/50">

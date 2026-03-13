@@ -287,7 +287,7 @@ function PropertyCard({
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Address
@@ -296,16 +296,6 @@ function PropertyCard({
               <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
               <p className="text-sm">{address}</p>
             </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Monthly Invoice
-            </p>
-            <p className="text-sm font-semibold text-amber-600">
-              {property.monthlyInvoiceAmount !== null
-                ? `$${property.monthlyInvoiceAmount.toFixed(2)}`
-                : "—"}
-            </p>
           </div>
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

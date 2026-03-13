@@ -230,3 +230,164 @@ export async function generateBillingRecord(propertyId: string) {
 
   return record
 }
+
+/**
+ * Compute live data for the current (open) billing period without persisting.
+ * Returns a shape compatible with BillingRecordData for display in history.
+ */
+export async function computeCurrentPeriodData(propertyId: string) {
+  const property = await prisma.property.findUniqueOrThrow({
+    where: { id: propertyId },
+    select: {
+      id: true,
+      billingClosingDay: true,
+      monthlyInvoiceAmount: true,
+      commonAreaSplit: true,
+    },
+  })
+
+  if (!property.billingClosingDay || !property.monthlyInvoiceAmount) {
+    return null
+  }
+
+  const periodStart = getLastClosingDate(property.billingClosingDay)
+  const now = new Date()
+
+  // Fetch groups
+  const groups = await prisma.channelGroup.findMany({
+    where: {
+      propertyId,
+      isActive: true,
+      OR: [
+        { channels: { some: { isEnabled: true } } },
+        { isVirtual: true },
+      ],
+    },
+    orderBy: { displayOrder: "asc" },
+    include: {
+      tenants: {
+        select: { id: true, fullName: true },
+        take: 1,
+      },
+    },
+  })
+
+  // Aggregate kWh per group since period start
+  const groupConsumption: Record<string, number> = {}
+  const groupIds = groups.map((g) => g.id)
+
+  if (groupIds.length > 0) {
+    const channelsWithConsumption = await prisma.channel.findMany({
+      where: {
+        propertyId,
+        isEnabled: true,
+        assignedGroupId: { in: groupIds },
+      },
+      select: {
+        assignedGroupId: true,
+        measurements: {
+          where: { measurementTs: { gte: periodStart } },
+          select: { kwh: true },
+        },
+      },
+    })
+
+    for (const ch of channelsWithConsumption) {
+      if (!ch.assignedGroupId) continue
+      const totalKwh = ch.measurements.reduce(
+        (sum, m) => sum + Math.max(0, m.kwh ?? 0),
+        0
+      )
+      groupConsumption[ch.assignedGroupId] =
+        (groupConsumption[ch.assignedGroupId] ?? 0) + totalKwh
+    }
+  }
+
+  // Virtual group consumption
+  const incomeGroup = groups.find((g) => g.groupType === "INCOME")
+  const totalIncomeKwh = incomeGroup
+    ? groupConsumption[incomeGroup.id] ?? 0
+    : 0
+
+  const virtualGroups = groups.filter((g) => g.isVirtual)
+  if (virtualGroups.length > 0) {
+    const sumNonVirtualConsumption = groups
+      .filter((g) => !g.isVirtual && g.groupType !== "INCOME")
+      .reduce((sum, g) => sum + (groupConsumption[g.id] ?? 0), 0)
+
+    const remainingKwh = Math.max(0, totalIncomeKwh - sumNonVirtualConsumption)
+    const perVirtualKwh = remainingKwh / virtualGroups.length
+
+    for (const vg of virtualGroups) {
+      groupConsumption[vg.id] = perVirtualKwh
+    }
+  }
+
+  // Compute to pay
+  const displayGroups = groups.filter(
+    (g) => g.groupType === "APARTMENT" || g.groupType === "COMMON"
+  )
+  const apartmentGroups = displayGroups.filter(
+    (g) => g.groupType === "APARTMENT"
+  )
+  const commonGroups = displayGroups.filter((g) => g.groupType === "COMMON")
+
+  const totalCommonKwh = commonGroups.reduce(
+    (sum, g) => sum + (groupConsumption[g.id] ?? 0),
+    0
+  )
+  const totalApartmentKwh = apartmentGroups.reduce(
+    (sum, g) => sum + (groupConsumption[g.id] ?? 0),
+    0
+  )
+
+  const commonCost =
+    totalIncomeKwh > 0
+      ? (totalCommonKwh / totalIncomeKwh) * property.monthlyInvoiceAmount
+      : 0
+
+  const items = displayGroups.map((g) => {
+    const kwh = groupConsumption[g.id] ?? 0
+    const percentage = totalIncomeKwh > 0 ? (kwh * 100) / totalIncomeKwh : 0
+
+    let toPay: number | null = null
+    if (totalIncomeKwh > 0 && g.groupType !== "COMMON") {
+      const ownCost =
+        (kwh / totalIncomeKwh) * property.monthlyInvoiceAmount!
+      let commonShare = 0
+      if (commonCost > 0 && apartmentGroups.length > 0) {
+        if (property.commonAreaSplit === "EQUAL") {
+          commonShare = commonCost / apartmentGroups.length
+        } else {
+          commonShare =
+            totalApartmentKwh > 0 ? commonCost * (kwh / totalApartmentKwh) : 0
+        }
+      }
+      toPay = ownCost + commonShare
+    }
+
+    const tenant = g.tenants[0] ?? null
+    return {
+      id: `current-${g.id}`,
+      groupName: g.groupName,
+      groupType: g.groupType as "INCOME" | "COMMON" | "APARTMENT",
+      kwh,
+      percentage,
+      toPay,
+      tenantName: tenant?.fullName ?? null,
+    }
+  })
+
+  return {
+    id: "current-period",
+    billingPeriodStart: periodStart.toISOString(),
+    billingPeriodEnd: now.toISOString(),
+    billingClosingDay: property.billingClosingDay,
+    totalConsumptionKwh: totalIncomeKwh,
+    monthlyInvoiceAmount: property.monthlyInvoiceAmount,
+    commonAreaSplit: property.commonAreaSplit as "EQUAL" | "PROPORTIONAL",
+    createdAt: now.toISOString(),
+    isCurrent: true as const,
+    items,
+  }
+}

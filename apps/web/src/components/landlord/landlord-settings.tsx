@@ -21,7 +21,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Pencil, UserPlus, Archive, RotateCcw, Building, MapPin } from "lucide-react"
+import { Pencil, UserPlus, Archive, RotateCcw, MapPin, User, Home, Users } from "lucide-react"
 import {
   updatePropertyDetails,
   updateMonthlyInvoice,
@@ -99,33 +99,36 @@ export function LandlordSettings({
     <div className="space-y-8">
       {/* Landlord Profile */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          My Profile
-        </h3>
-        <Card className={cardClass}>
+        <div className="flex items-center gap-2 mb-3">
+          <User className="h-4 w-4 text-sky-500" />
+          <h3 className="text-sm font-semibold text-sky-700 dark:text-sky-400 uppercase tracking-wide">
+            My Profile
+          </h3>
+        </div>
+        <Card className={`${cardClass} border-l-4 border-l-sky-500`}>
           <CardContent className="py-5">
             <div className="flex items-start justify-between gap-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  <p className="text-xs font-medium text-sky-600/70 dark:text-sky-400/70 uppercase tracking-wide">
                     Name
                   </p>
                   <p className="text-sm font-semibold">{landlord.fullName}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  <p className="text-xs font-medium text-sky-600/70 dark:text-sky-400/70 uppercase tracking-wide">
                     Email
                   </p>
                   <p className="text-sm">{landlord.email}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  <p className="text-xs font-medium text-sky-600/70 dark:text-sky-400/70 uppercase tracking-wide">
                     Company
                   </p>
                   <p className="text-sm">{landlord.companyName || "—"}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  <p className="text-xs font-medium text-sky-600/70 dark:text-sky-400/70 uppercase tracking-wide">
                     Phone
                   </p>
                   <p className="text-sm">{landlord.phone || "—"}</p>
@@ -134,7 +137,7 @@ export function LandlordSettings({
               <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
                 <DialogTrigger
                   render={
-                    <Button variant="ghost" size="icon-xs" className="text-muted-foreground hover:text-foreground shrink-0">
+                    <Button variant="ghost" size="icon-xs" className="text-sky-500 hover:text-sky-700 shrink-0">
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
                   }
@@ -151,9 +154,12 @@ export function LandlordSettings({
 
       {/* Properties */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          Properties
-        </h3>
+        <div className="flex items-center gap-2 mb-3">
+          <Home className="h-4 w-4 text-emerald-500" />
+          <h3 className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
+            Properties
+          </h3>
+        </div>
         <div className="space-y-4">
           {properties.map((prop) => (
             <PropertyCard
@@ -168,9 +174,12 @@ export function LandlordSettings({
       {/* Tenants */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Tenants
-          </h3>
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-violet-500" />
+            <h3 className="text-sm font-semibold text-violet-700 dark:text-violet-400 uppercase tracking-wide">
+              Tenants
+            </h3>
+          </div>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger
               render={
@@ -270,35 +279,26 @@ function PropertyCard({
     .join(", ")
 
   return (
-    <Card className={cardClass}>
+    <Card className={`${cardClass} border-l-4 border-l-emerald-500`}>
       <CardContent className="py-5">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-2 min-w-0">
-            <Building className="h-4 w-4 text-sky-500 shrink-0" />
-            <p className="font-semibold truncate">{property.propertyName}</p>
+            <MapPin className="h-4 w-4 text-emerald-500 shrink-0" />
+            <p className="font-semibold truncate">{address}</p>
           </div>
           <Button
             variant="ghost"
             size="icon-xs"
-            className="text-muted-foreground hover:text-foreground shrink-0"
+            className="text-emerald-500 hover:text-emerald-700 shrink-0"
             onClick={onEdit}
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Address
-            </p>
-            <div className="flex items-start gap-1.5">
-              <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
-              <p className="text-sm">{address}</p>
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs font-medium text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wide">
               Billing Closing
             </p>
             <p className="text-sm font-semibold">
@@ -308,7 +308,7 @@ function PropertyCard({
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs font-medium text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wide">
               Cost Distribution
             </p>
             <Select
@@ -353,14 +353,22 @@ function TenantCard({
 
   return (
     <Card
-      className={`${cardClass} ${!tenant.isActive ? "opacity-60" : ""}`}
+      className={`${cardClass} ${
+        tenant.isActive
+          ? "border-l-4 border-l-violet-500"
+          : "border-l-4 border-l-gray-300 opacity-60"
+      }`}
     >
       <CardContent className="py-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1">
               <p className="font-semibold truncate">{tenant.fullName}</p>
-              {!tenant.isActive && (
+              {tenant.isActive ? (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-300 text-emerald-600 bg-emerald-50">
+                  Active
+                </Badge>
+              ) : (
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-red-300 text-red-600 bg-red-50">
                   Archived
                 </Badge>
@@ -368,7 +376,7 @@ function TenantCard({
             </div>
             <p className="text-xs text-muted-foreground">{tenant.email}</p>
             {tenant.apartmentGroupName && (
-              <p className="text-xs text-sky-600 mt-1">
+              <p className="text-xs text-violet-600 dark:text-violet-400 mt-1 font-medium">
                 {tenant.apartmentGroupName}
               </p>
             )}
@@ -377,7 +385,7 @@ function TenantCard({
             <Button
               variant="ghost"
               size="icon-xs"
-              className="text-muted-foreground hover:text-foreground"
+              className="text-violet-400 hover:text-violet-600"
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5" />

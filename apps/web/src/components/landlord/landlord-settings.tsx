@@ -24,7 +24,6 @@ import {
 import { Pencil, UserPlus, Archive, RotateCcw, MapPin, User, Home, Users } from "lucide-react"
 import {
   updatePropertyDetails,
-  updateMonthlyInvoice,
   updateCommonAreaSplit,
   updateLandlordProfile,
 } from "@/actions/property-settings"
@@ -474,7 +473,6 @@ function EditPropertyDialog({
 }) {
   async function handleSubmit(formData: FormData) {
     await updatePropertyDetails(formData)
-    await updateMonthlyInvoice(formData)
     onClose()
   }
 
@@ -502,31 +500,17 @@ function EditPropertyDialog({
             <Label htmlFor="ep-city">City</Label>
             <Input id="ep-city" name="city" defaultValue={property.city} required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="ep-closing">Billing Closing Day</Label>
-              <Input
-                id="ep-closing"
-                name="billingClosingDay"
-                type="number"
-                min={1}
-                max={31}
-                defaultValue={property.billingClosingDay ?? ""}
-                placeholder="e.g. 15"
-              />
-            </div>
-            <div>
-              <Label htmlFor="ep-invoice">Monthly Invoice ($)</Label>
-              <Input
-                id="ep-invoice"
-                name="monthlyInvoiceAmount"
-                type="number"
-                step="0.01"
-                min={0}
-                defaultValue={property.monthlyInvoiceAmount ?? ""}
-                placeholder="e.g. 180.00"
-              />
-            </div>
+          <div>
+            <Label htmlFor="ep-closing">Billing Closing Day</Label>
+            <Input
+              id="ep-closing"
+              name="billingClosingDay"
+              type="number"
+              min={1}
+              max={31}
+              defaultValue={property.billingClosingDay ?? ""}
+              placeholder="e.g. 15"
+            />
           </div>
         </div>
         <DialogFooter>

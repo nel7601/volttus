@@ -121,7 +121,6 @@ export default async function LandlordHistoryPage({
       <BillingHistory
         records={serializedRecords}
         propertyId={selectedPropertyId}
-        propertyName={property.propertyName}
         selectedYear={selectedYear}
         selectedMonth={selectedMonth}
         availableYears={availableYears}

@@ -249,14 +249,9 @@ function PeriodGroup({ record }: { record: BillingRecordData }) {
       {/* Period header row */}
       <TableRow className="bg-slate-100/80 dark:bg-slate-800/40 border-t-2 border-slate-300/60 dark:border-slate-600/40 hover:bg-slate-100/80">
         <TableCell colSpan={5} className="py-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
-              {periodLabel}
-            </span>
-            <span className="text-xs text-slate-500 dark:text-slate-500">
-              {record.commonAreaSplit === "EQUAL" ? "Equal split" : "Proportional"}
-            </span>
-          </div>
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+            {periodLabel}
+          </span>
         </TableCell>
       </TableRow>
 

@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/auth"
 import { propertySchema } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
 
 export async function createProperty(formData: FormData) {
   const session = await getSession()
@@ -60,8 +59,8 @@ export async function updateProperty(formData: FormData) {
   })
 
   revalidatePath("/admin/properties")
+  revalidatePath(`/admin/properties/${propertyId}`)
   revalidatePath("/landlord")
-  redirect(`/admin/properties/${propertyId}`)
 }
 
 export async function deleteProperty(id: string) {

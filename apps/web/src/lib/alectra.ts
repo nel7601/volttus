@@ -11,6 +11,14 @@
 
 const ALECTRA_API_BASE = "https://alectra-svc.smartcmobile.link"
 
+/** Browser-like headers required by the Alectra API (blocks bare server requests) */
+const BROWSER_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+  Origin: "https://myalectra.alectrautilities.com",
+  Referer: "https://myalectra.alectrautilities.com/portal/",
+}
+
 interface AlectraLoginResponse {
   status: string
   data: {
@@ -67,7 +75,11 @@ async function login(username: string, password: string): Promise<string> {
     `${ALECTRA_API_BASE}/UsermanagementAPI/api/1/Login/auth`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: {
+        ...BROWSER_HEADERS,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
       body: JSON.stringify({ userName: username, password }),
     }
   )
@@ -87,6 +99,7 @@ async function fetchCurrentBill(
   const res = await fetch(`${ALECTRA_API_BASE}/BillingAPI/api/1/bill/Current`, {
     method: "POST",
     headers: {
+      ...BROWSER_HEADERS,
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -111,7 +124,11 @@ async function fetchDashboardBill(
       `${ALECTRA_API_BASE}/apiservices/api/1/account/GetDashBoardBill?AccountNumber=${accountNumber}`,
       {
         method: "GET",
-        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+        headers: {
+          ...BROWSER_HEADERS,
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
       }
     )
     if (!res.ok) return null

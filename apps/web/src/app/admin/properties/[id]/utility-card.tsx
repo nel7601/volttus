@@ -49,15 +49,29 @@ export function UtilityCard({
 }) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [connectError, setConnectError] = useState<string | null>(null)
   const [isTesting, setIsTesting] = useState(false)
   const [testResult, setTestResult] = useState<TestResult | null>(null)
 
   const isConnected = !!alectraAccount
 
   async function handleConnect(formData: FormData) {
-    await createAlectraAccount(formData)
-    setIsEditing(false)
-    router.refresh()
+    setIsConnecting(true)
+    setConnectError(null)
+    try {
+      const result = await createAlectraAccount(formData)
+      if (!result.success) {
+        setConnectError(result.error ?? "Connection failed")
+        return
+      }
+      setIsEditing(false)
+      router.refresh()
+    } catch (err) {
+      setConnectError(err instanceof Error ? err.message : "Unknown error")
+    } finally {
+      setIsConnecting(false)
+    }
   }
 
   async function handleDisconnect() {
@@ -65,6 +79,7 @@ export function UtilityCard({
     await deleteAlectraAccount(alectraAccount.id)
     setIsEditing(false)
     setTestResult(null)
+    setConnectError(null)
     router.refresh()
   }
 
@@ -253,11 +268,17 @@ export function UtilityCard({
                   name="username"
                   defaultValue={isEditing ? alectraAccount?.username : ""}
                   required
+                  disabled={isConnecting}
                 />
               </div>
               <div className="space-y-1">
                 <Label>Password</Label>
-                <Input name="password" type="password" required />
+                <Input
+                  name="password"
+                  type="password"
+                  required
+                  disabled={isConnecting}
+                />
               </div>
               <div className="space-y-1">
                 <Label>Account Number</Label>
@@ -265,6 +286,7 @@ export function UtilityCard({
                   name="accountNumber"
                   defaultValue={isEditing ? alectraAccount?.accountNumber : ""}
                   required
+                  disabled={isConnecting}
                 />
               </div>
               <div className="space-y-1">
@@ -274,19 +296,36 @@ export function UtilityCard({
                   defaultValue={
                     isEditing ? alectraAccount?.meterNumber ?? "" : ""
                   }
+                  disabled={isConnecting}
                 />
               </div>
             </div>
+
+            {/* Connection error */}
+            {connectError && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                {connectError}
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
-              <Button type="submit" size="sm">
-                {isEditing ? "Update" : "Connect"}
+              <Button type="submit" size="sm" disabled={isConnecting}>
+                {isConnecting
+                  ? "Verifying…"
+                  : isEditing
+                    ? "Update"
+                    : "Connect"}
               </Button>
               {isEditing && (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => {
+                    setIsEditing(false)
+                    setConnectError(null)
+                  }}
+                  disabled={isConnecting}
                 >
                   Cancel
                 </Button>
@@ -296,11 +335,10 @@ export function UtilityCard({
         )}
 
         {/* Empty state hint */}
-        {!isConnected && (
+        {!isConnected && !isConnecting && (
           <p className="text-xs text-muted-foreground">
             Connect your Alectra Utilities account to automatically read monthly
-            invoice amounts. The system polls daily after the billing closing
-            day.
+            invoice amounts. Credentials will be verified before saving.
           </p>
         )}
       </CardContent>

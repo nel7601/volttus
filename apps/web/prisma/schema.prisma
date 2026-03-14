@@ -79,12 +79,15 @@ model Property {
   billingClosingDay    Int?            @map("billing_closing_day")
   commonAreaSplit      CommonAreaSplit @default(EQUAL) @map("common_area_split")
   monthlyInvoiceAmount Float?          @map("monthly_invoice_amount")
+  lastBillPeriod       String?         @map("last_bill_period")
+  lastBillFetchedAt    DateTime?       @map("last_bill_fetched_at")
   isActive             Boolean         @default(true) @map("is_active")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   landlord        User             @relation("LandlordProperties", fields: [landlordId], references: [id])
   emporiaAccount  EmporiaAccount?
+  alectraAccount  AlectraAccount?
   devices         Device[]
   channelGroups   ChannelGroup[]
   channels        Channel[]
@@ -92,6 +95,7 @@ model Property {
   measurements    Measurement[]
   ingestionRuns   IngestionRun[]
   ingestionErrors IngestionError[]
+  billingRecords  BillingRecord[]
 
   @@map("properties")
 }
@@ -110,6 +114,25 @@ model EmporiaAccount {
   devices  Device[]
 
   @@map("emporia_accounts")
+}
+
+model AlectraAccount {
+  id                String    @id @default(cuid())
+  propertyId        String    @unique @map("property_id")
+  username          String
+  encryptedPassword String    @map("encrypted_password")
+  accountNumber     String    @map("account_number")
+  meterNumber       String?   @map("meter_number")
+  status            String    @default("active")
+  lastLoginAt       DateTime? @map("last_login_at")
+  lastPollAt        DateTime? @map("last_poll_at")
+  lastPollResult    String?   @map("last_poll_result")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("alectra_accounts")
 }
 
 model Device {
@@ -142,6 +165,7 @@ model ChannelGroup {
   groupType       GroupType @map("group_type")
   apartmentNumber String?   @map("apartment_number")
   displayOrder    Int       @default(0) @map("display_order")
+  isVirtual       Boolean   @default(false) @map("is_virtual")
   isActive        Boolean   @default(true) @map("is_active")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
@@ -250,4 +274,39 @@ model IngestionError {
   property     Property     @relation(fields: [propertyId], references: [id])
 
   @@map("ingestion_errors")
+}
+
+model BillingRecord {
+  id                   String          @id @default(cuid())
+  propertyId           String          @map("property_id")
+  billingPeriodStart   DateTime        @map("billing_period_start")
+  billingPeriodEnd     DateTime        @map("billing_period_end")
+  billingClosingDay    Int             @map("billing_closing_day")
+  totalConsumptionKwh  Float           @map("total_consumption_kwh")
+  monthlyInvoiceAmount Float           @map("monthly_invoice_amount")
+  commonAreaSplit      CommonAreaSplit @map("common_area_split")
+  createdAt            DateTime        @default(now()) @map("created_at")
+
+  property Property            @relation(fields: [propertyId], references: [id])
+  items    BillingRecordItem[]
+
+  @@unique([propertyId, billingPeriodEnd])
+  @@map("billing_records")
+}
+
+model BillingRecordItem {
+  id              String    @id @default(cuid())
+  billingRecordId String    @map("billing_record_id")
+  groupId         String    @map("group_id")
+  groupName       String    @map("group_name")
+  groupType       GroupType @map("group_type")
+  kwh             Float
+  percentage      Float
+  toPay           Float?    @map("to_pay")
+  tenantName      String?   @map("tenant_name")
+  tenantId        String?   @map("tenant_id")
+
+  billingRecord BillingRecord @relation(fields: [billingRecordId], references: [id], onDelete: Cascade)
+
+  @@map("billing_record_items")
 }

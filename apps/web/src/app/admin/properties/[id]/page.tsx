@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { createEmporiaAccount } from "@/actions/emporia-accounts"
+import { createAlectraAccount } from "@/actions/alectra-accounts"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -20,6 +21,7 @@ export default async function PropertyDetailPage({
     include: {
       landlord: true,
       emporiaAccount: true,
+      alectraAccount: true,
       devices: { include: { channels: true } },
       channelGroups: { orderBy: { displayOrder: "asc" } },
       tenants: { include: { apartmentGroup: true } },
@@ -40,7 +42,7 @@ export default async function PropertyDetailPage({
         <h1 className="text-2xl font-bold">{property.propertyName}</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm">Info</CardTitle>
@@ -75,6 +77,69 @@ export default async function PropertyDetailPage({
                 <div className="space-y-1">
                   <Label className="text-xs">Emporia Password</Label>
                   <Input name="password" type="password" required />
+                </div>
+                <Button type="submit" size="sm">
+                  Connect
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-sm">Alectra Account</CardTitle>
+            {property.alectraAccount && (
+              <Badge variant="outline" className="text-xs">
+                {property.lastBillFetchedAt
+                  ? `Last bill: ${property.lastBillFetchedAt.toLocaleDateString()}`
+                  : "No bills fetched yet"}
+              </Badge>
+            )}
+          </CardHeader>
+          <CardContent>
+            {property.alectraAccount ? (
+              <div className="space-y-1 text-sm">
+                <p>User: {property.alectraAccount.username}</p>
+                <p>Account: {property.alectraAccount.accountNumber}</p>
+                {property.alectraAccount.meterNumber && (
+                  <p>Meter: {property.alectraAccount.meterNumber}</p>
+                )}
+                <div className="flex items-center gap-2 pt-1">
+                  <Badge>{property.alectraAccount.status}</Badge>
+                  {property.monthlyInvoiceAmount != null && (
+                    <Badge variant="outline">
+                      ${property.monthlyInvoiceAmount.toFixed(2)}
+                    </Badge>
+                  )}
+                </div>
+                {property.alectraAccount.lastPollAt && (
+                  <p className="text-xs text-muted-foreground pt-1">
+                    Last poll: {property.alectraAccount.lastPollAt.toLocaleString()}
+                    {property.alectraAccount.lastPollResult && (
+                      <> &mdash; {property.alectraAccount.lastPollResult}</>
+                    )}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <form action={createAlectraAccount} className="space-y-3">
+                <input type="hidden" name="propertyId" value={property.id} />
+                <div className="space-y-1">
+                  <Label className="text-xs">Alectra Username</Label>
+                  <Input name="username" required />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Alectra Password</Label>
+                  <Input name="password" type="password" required />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Account Number</Label>
+                  <Input name="accountNumber" required />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Meter Number (optional)</Label>
+                  <Input name="meterNumber" />
                 </div>
                 <Button type="submit" size="sm">
                   Connect

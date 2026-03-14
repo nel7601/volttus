@@ -44,6 +44,14 @@ export const emporiaAccountSchema = z.object({
   propertyId: z.string().min(1),
 })
 
+export const alectraAccountSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+  accountNumber: z.string().min(1, "Account number is required"),
+  meterNumber: z.string().optional(),
+  propertyId: z.string().min(1),
+})
+
 export const channelMappingSchema = z.object({
   channelId: z.string(),
   displayName: z.string(),

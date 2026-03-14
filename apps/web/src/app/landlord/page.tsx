@@ -36,7 +36,11 @@ export default async function LandlordPage({
 
   const landlord = await prisma.user.findUnique({
     where: { id: session.id },
-    include: { properties: true },
+    include: {
+      properties: {
+        include: { alectraAccount: { select: { id: true } } },
+      },
+    },
   })
 
   if (!landlord || landlord.properties.length === 0) {
@@ -120,6 +124,8 @@ export default async function LandlordPage({
     billingClosingDay: p.billingClosingDay,
     commonAreaSplit: p.commonAreaSplit,
     monthlyInvoiceAmount: p.monthlyInvoiceAmount,
+    lastBillFetchedAt: p.lastBillFetchedAt?.toISOString() ?? null,
+    hasAlectraAccount: !!p.alectraAccount,
   }))
 
   const groupsData: GroupData[] = groups.map((g) => ({

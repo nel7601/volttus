@@ -59,6 +59,8 @@ export interface PropertyData {
   billingClosingDay: number | null
   commonAreaSplit: "EQUAL" | "PROPORTIONAL"
   monthlyInvoiceAmount: number | null
+  lastBillFetchedAt: string | null
+  hasAlectraAccount: boolean
 }
 
 export interface GroupData {
@@ -267,12 +269,22 @@ export function LandlordDashboard({
                 <p className="text-xs text-muted-foreground">
                   Monthly Invoice Amount
                 </p>
+                {property.hasAlectraAccount && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-emerald-500/30 text-emerald-600">
+                    Auto-sync
+                  </Badge>
+                )}
               </div>
               <p className="text-3xl font-bold text-amber-600">
                 {property.monthlyInvoiceAmount !== null
                   ? `$${property.monthlyInvoiceAmount.toFixed(2)}`
                   : "Not set"}
               </p>
+              {property.lastBillFetchedAt && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Last synced: {new Date(property.lastBillFetchedAt).toLocaleDateString()}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

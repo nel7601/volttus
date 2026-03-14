@@ -33,17 +33,10 @@ const statuses = ["ALL", "ACTIVE", "INACTIVE"] as const
 export function PropertiesTable({ properties }: { properties: PropertyData[] }) {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
-  const [landlordFilter, setLandlordFilter] = useState<string>("ALL")
-
-  // Get unique landlords for the filter
-  const landlords = Array.from(
-    new Map(properties.map((p) => [p.landlordId, p.landlordName])).entries()
-  ).sort((a, b) => a[1].localeCompare(b[1]))
 
   const filtered = properties.filter((p) => {
     if (statusFilter === "ACTIVE" && !p.isActive) return false
     if (statusFilter === "INACTIVE" && p.isActive) return false
-    if (landlordFilter !== "ALL" && p.landlordId !== landlordFilter) return false
     if (search) {
       const q = search.toLowerCase()
       const address = [p.addressLine1, p.addressLine2, p.city]
@@ -108,27 +101,6 @@ export function PropertiesTable({ properties }: { properties: PropertyData[] }) 
               ))}
             </div>
 
-            <div className="flex items-center gap-1">
-              <Button
-                size="sm"
-                variant={landlordFilter === "ALL" ? "default" : "outline"}
-                onClick={() => setLandlordFilter("ALL")}
-                className="text-xs h-8"
-              >
-                All Landlords
-              </Button>
-              {landlords.map(([id, name]) => (
-                <Button
-                  key={id}
-                  size="sm"
-                  variant={landlordFilter === id ? "default" : "outline"}
-                  onClick={() => setLandlordFilter(id)}
-                  className="text-xs h-8"
-                >
-                  {name}
-                </Button>
-              ))}
-            </div>
           </div>
 
           {/* Table */}

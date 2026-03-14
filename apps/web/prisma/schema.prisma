@@ -89,8 +89,12 @@ model Property {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
+  lastBillPeriod    String?   @map("last_bill_period")
+  lastBillFetchedAt DateTime? @map("last_bill_fetched_at")
+
   landlord        User             @relation("LandlordProperties", fields: [landlordId], references: [id])
   emporiaAccount  EmporiaAccount?
+  alectraAccount  AlectraAccount?
   devices         Device[]
   channelGroups   ChannelGroup[]
   channels        Channel[]
@@ -117,6 +121,25 @@ model EmporiaAccount {
   devices  Device[]
 
   @@map("emporia_accounts")
+}
+
+model AlectraAccount {
+  id                String    @id @default(cuid())
+  propertyId        String    @unique @map("property_id")
+  username          String
+  encryptedPassword String    @map("encrypted_password")
+  accountNumber     String    @map("account_number")
+  meterNumber       String?   @map("meter_number")
+  status            String    @default("active")
+  lastLoginAt       DateTime? @map("last_login_at")
+  lastPollAt        DateTime? @map("last_poll_at")
+  lastPollResult    String?   @map("last_poll_result")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("alectra_accounts")
 }
 
 model Device {

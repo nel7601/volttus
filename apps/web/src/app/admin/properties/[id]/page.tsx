@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PropertyEditForm } from "./property-edit-form"
 import { DeviceCard } from "./device-card"
+import { UtilityCard } from "./utility-card"
 
 export const dynamic = "force-dynamic"
 export default async function PropertyDetailPage({
@@ -19,6 +20,7 @@ export default async function PropertyDetailPage({
       include: {
         landlord: true,
         emporiaAccount: true,
+        alectraAccount: true,
         devices: { include: { channels: true } },
         channelGroups: { orderBy: { displayOrder: "asc" } },
         tenants: { include: { apartmentGroup: true } },
@@ -98,6 +100,31 @@ export default async function PropertyDetailPage({
           lastSuccessfulSyncAt: d.lastSuccessfulSyncAt?.toISOString() ?? null,
         }))}
       />
+
+      {/* Utility Connection (only when invoice mode is AUTO) */}
+      {property.invoiceMode === "AUTO" && (
+        <UtilityCard
+          propertyId={property.id}
+          alectraAccount={
+            property.alectraAccount
+              ? {
+                  id: property.alectraAccount.id,
+                  username: property.alectraAccount.username,
+                  accountNumber: property.alectraAccount.accountNumber,
+                  meterNumber: property.alectraAccount.meterNumber,
+                  status: property.alectraAccount.status,
+                  lastPollAt:
+                    property.alectraAccount.lastPollAt?.toISOString() ?? null,
+                  lastPollResult: property.alectraAccount.lastPollResult,
+                }
+              : null
+          }
+          lastBillFetchedAt={
+            property.lastBillFetchedAt?.toISOString() ?? null
+          }
+          monthlyInvoiceAmount={property.monthlyInvoiceAmount}
+        />
+      )}
 
       {/* Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { updateProperty } from "@/actions/properties"
 import { createEmporiaAccount, deleteEmporiaAccount } from "@/actions/emporia-accounts"
+import { PropertyEditForm } from "./property-edit-form"
 
 export const dynamic = "force-dynamic"
 export default async function PropertyDetailPage({
@@ -60,145 +60,24 @@ export default async function PropertyDetailPage({
         </div>
       </div>
 
-      {/* Property Details Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Property Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action={updateProperty} className="space-y-4">
-            <input type="hidden" name="propertyId" value={property.id} />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="propertyName">Property Name</Label>
-                <Input
-                  id="propertyName"
-                  name="propertyName"
-                  defaultValue={property.propertyName}
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="landlordId">Landlord</Label>
-                <select
-                  id="landlordId"
-                  name="landlordId"
-                  defaultValue={property.landlordId}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                >
-                  {landlords.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.fullName} ({l.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="addressLine1">Address Line 1</Label>
-                <Input
-                  id="addressLine1"
-                  name="addressLine1"
-                  defaultValue={property.addressLine1}
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="addressLine2">Address Line 2</Label>
-                <Input
-                  id="addressLine2"
-                  name="addressLine2"
-                  defaultValue={property.addressLine2 ?? ""}
-                  placeholder="Apt, suite, etc. (optional)"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  name="city"
-                  defaultValue={property.city}
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="provinceState">Province / State</Label>
-                <Input
-                  id="provinceState"
-                  name="provinceState"
-                  defaultValue={property.provinceState ?? ""}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="postalCode">Postal Code</Label>
-                <Input
-                  id="postalCode"
-                  name="postalCode"
-                  defaultValue={property.postalCode ?? ""}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  name="country"
-                  defaultValue={property.country}
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="timezone">Timezone</Label>
-                <Input
-                  id="timezone"
-                  name="timezone"
-                  defaultValue={property.timezone}
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="billingClosingDay">
-                  Billing Closing Day (1-31)
-                </Label>
-                <Input
-                  id="billingClosingDay"
-                  name="billingClosingDay"
-                  type="number"
-                  min={1}
-                  max={31}
-                  defaultValue={property.billingClosingDay ?? ""}
-                  placeholder="e.g. 15"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="isActive">Status</Label>
-                <select
-                  id="isActive"
-                  name="isActive"
-                  defaultValue={String(property.isActive)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                >
-                  <option value="true">Active</option>
-                  <option value="false">Inactive</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <Button type="submit">Save Changes</Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      {/* Property Details Form (client component) */}
+      <PropertyEditForm
+        property={{
+          id: property.id,
+          propertyName: property.propertyName,
+          addressLine1: property.addressLine1,
+          addressLine2: property.addressLine2,
+          city: property.city,
+          provinceState: property.provinceState,
+          postalCode: property.postalCode,
+          country: property.country,
+          timezone: property.timezone,
+          billingClosingDay: property.billingClosingDay,
+          isActive: property.isActive,
+          landlordId: property.landlordId,
+        }}
+        landlords={landlords}
+      />
 
       {/* Emporia Account */}
       <Card>

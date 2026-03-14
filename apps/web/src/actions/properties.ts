@@ -46,6 +46,7 @@ export async function updateProperty(formData: FormData) {
   })
 
   const billingClosingDay = Number(formData.get("billingClosingDay")) || null
+  const invoiceMode = formData.get("invoiceMode") === "AUTO" ? "AUTO" as const : "MANUAL" as const
   const isActive = formData.get("isActive") === "true"
 
   await prisma.property.update({
@@ -53,6 +54,7 @@ export async function updateProperty(formData: FormData) {
     data: {
       ...parsed,
       billingClosingDay,
+      invoiceMode,
       isActive,
     },
   })

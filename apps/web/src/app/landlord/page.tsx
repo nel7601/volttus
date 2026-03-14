@@ -147,6 +147,7 @@ export default async function LandlordPage({
     country: p.country,
     billingClosingDay: p.billingClosingDay,
     commonAreaSplit: p.commonAreaSplit,
+    invoiceMode: p.invoiceMode,
     monthlyInvoiceAmount: p.monthlyInvoiceAmount,
   }))
 

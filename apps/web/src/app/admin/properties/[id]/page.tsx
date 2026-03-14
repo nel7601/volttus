@@ -73,6 +73,7 @@ export default async function PropertyDetailPage({
           country: property.country,
           timezone: property.timezone,
           billingClosingDay: property.billingClosingDay,
+          invoiceMode: property.invoiceMode,
           isActive: property.isActive,
           landlordId: property.landlordId,
         }}

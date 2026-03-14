@@ -36,6 +36,7 @@ export interface PropertyData {
   country: string
   billingClosingDay: number | null
   commonAreaSplit: "EQUAL" | "PROPORTIONAL"
+  invoiceMode: "MANUAL" | "AUTO"
   monthlyInvoiceAmount: number | null
 }
 

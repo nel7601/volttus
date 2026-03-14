@@ -24,6 +24,7 @@ interface PropertyFormData {
   country: string
   timezone: string
   billingClosingDay: number | null
+  invoiceMode: "MANUAL" | "AUTO"
   isActive: boolean
   landlordId: string
 }
@@ -159,6 +160,19 @@ export function PropertyEditForm({
                 defaultValue={property.billingClosingDay ?? ""}
                 placeholder="e.g. 15"
               />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="invoiceMode">Invoice Mode</Label>
+              <select
+                id="invoiceMode"
+                name="invoiceMode"
+                defaultValue={property.invoiceMode}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="MANUAL">Manual</option>
+                <option value="AUTO">Auto (Utility)</option>
+              </select>
             </div>
 
             <div className="space-y-1">

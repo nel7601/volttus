@@ -24,6 +24,7 @@ interface PropertyData {
   city: string
   country: string
   isActive: boolean
+  invoiceMode: "MANUAL" | "AUTO"
   landlordName: string
   landlordId: string
 }
@@ -115,6 +116,7 @@ export function PropertiesTable({ properties }: { properties: PropertyData[] }) 
                   <TableHead>Address</TableHead>
                   <TableHead>Landlord</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Invoice</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -145,6 +147,18 @@ export function PropertiesTable({ properties }: { properties: PropertyData[] }) 
                           }
                         >
                           {p.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            p.invoiceMode === "AUTO"
+                              ? "border-blue-500/30 text-blue-700 bg-blue-50 hover:bg-blue-50"
+                              : "border-gray-300 text-gray-600 bg-gray-50 hover:bg-gray-50"
+                          }
+                        >
+                          {p.invoiceMode === "AUTO" ? "Auto" : "Manual"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

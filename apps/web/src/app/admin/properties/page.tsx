@@ -18,6 +18,7 @@ export default async function PropertiesPage() {
     city: p.city,
     country: p.country,
     isActive: p.isActive,
+    invoiceMode: p.invoiceMode,
     landlordName: p.landlord.fullName,
     landlordId: p.landlord.id,
   }))

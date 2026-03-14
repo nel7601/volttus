@@ -6,13 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { updateProperty } from "@/actions/properties"
 import { createEmporiaAccount, deleteEmporiaAccount } from "@/actions/emporia-accounts"
 
@@ -89,18 +82,18 @@ export default async function PropertyDetailPage({
 
               <div className="space-y-1">
                 <Label htmlFor="landlordId">Landlord</Label>
-                <Select name="landlordId" defaultValue={property.landlordId}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {landlords.map((l) => (
-                      <SelectItem key={l.id} value={l.id}>
-                        {l.fullName} ({l.email})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  id="landlordId"
+                  name="landlordId"
+                  defaultValue={property.landlordId}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  {landlords.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.fullName} ({l.email})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-1">
@@ -188,15 +181,15 @@ export default async function PropertyDetailPage({
 
               <div className="space-y-1">
                 <Label htmlFor="isActive">Status</Label>
-                <Select name="isActive" defaultValue={String(property.isActive)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="true">Active</SelectItem>
-                    <SelectItem value="false">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select
+                  id="isActive"
+                  name="isActive"
+                  defaultValue={String(property.isActive)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
               </div>
             </div>
 

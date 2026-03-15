@@ -84,39 +84,6 @@ export function LandlordDashboard({
     (g) => g.groupType === "APARTMENT" || g.groupType === "COMMON"
   )
 
-  const apartmentGroups = displayGroups.filter((g) => g.groupType === "APARTMENT")
-  const commonGroups = displayGroups.filter((g) => g.groupType === "COMMON")
-
-  const totalCommonKwh = commonGroups.reduce((sum, g) => sum + g.consumptionKwh, 0)
-  const totalApartmentKwh = apartmentGroups.reduce((sum, g) => sum + g.consumptionKwh, 0)
-
-  const commonCost =
-    property.monthlyInvoiceAmount && totalIncomeKwh > 0
-      ? (totalCommonKwh / totalIncomeKwh) * property.monthlyInvoiceAmount
-      : 0
-
-  function getGroupToPay(group: GroupData): number | null {
-    if (!property.monthlyInvoiceAmount || totalIncomeKwh <= 0) return null
-    if (group.groupType === "COMMON") return null
-
-    const ownCost =
-      (group.consumptionKwh / totalIncomeKwh) * property.monthlyInvoiceAmount
-
-    let commonShare = 0
-    if (commonCost > 0 && apartmentGroups.length > 0) {
-      if (property.commonAreaSplit === "EQUAL") {
-        commonShare = commonCost / apartmentGroups.length
-      } else {
-        commonShare =
-          totalApartmentKwh > 0
-            ? commonCost * (group.consumptionKwh / totalApartmentKwh)
-            : 0
-      }
-    }
-
-    return ownCost + commonShare
-  }
-
   const address = [property.addressLine1, property.addressLine2, property.city]
     .filter(Boolean)
     .join(", ")
@@ -172,7 +139,6 @@ export function LandlordDashboard({
                   <TableHead>Name</TableHead>
                   <TableHead className="text-right">kWh</TableHead>
                   <TableHead className="text-right">%</TableHead>
-                  <TableHead className="text-right hidden sm:table-cell">To Pay</TableHead>
                   <TableHead className="hidden md:table-cell">Tenant</TableHead>
                 </TableRow>
               </TableHeader>
@@ -190,7 +156,6 @@ export function LandlordDashboard({
                       {totalIncomeKwh.toFixed(3)}
                     </TableCell>
                     <TableCell />
-                    <TableCell className="hidden sm:table-cell" />
                     <TableCell className="hidden md:table-cell" />
                   </TableRow>
                 )}
@@ -201,7 +166,6 @@ export function LandlordDashboard({
                     totalIncomeKwh > 0
                       ? (group.consumptionKwh * 100) / totalIncomeKwh
                       : 0
-                  const toPay = getGroupToPay(group)
                   const isApartment = group.groupType === "APARTMENT"
 
                   return (
@@ -234,9 +198,6 @@ export function LandlordDashboard({
                         >
                           {pct.toFixed(1)}%
                         </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-medium hidden sm:table-cell">
-                        {toPay !== null ? `$${toPay.toFixed(2)}` : "-"}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         {group.tenant ? (

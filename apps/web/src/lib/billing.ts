@@ -52,9 +52,6 @@ export async function generateBillingRecord(propertyId: string) {
   if (!property.billingClosingDay) {
     throw new Error("Property does not have a billing closing day configured")
   }
-  if (!property.monthlyInvoiceAmount) {
-    throw new Error("Property does not have a monthly invoice amount configured")
-  }
 
   // 2. Compute period dates
   const billingPeriodEnd = getLastClosingDate(property.billingClosingDay)
@@ -167,20 +164,21 @@ export async function generateBillingRecord(propertyId: string) {
     0
   )
 
+  const invoiceAmount = property.monthlyInvoiceAmount
+
   const commonCost =
-    totalIncomeKwh > 0
-      ? (totalCommonKwh / totalIncomeKwh) * property.monthlyInvoiceAmount
+    invoiceAmount && totalIncomeKwh > 0
+      ? (totalCommonKwh / totalIncomeKwh) * invoiceAmount
       : 0
 
   function getGroupToPay(
     group: (typeof groups)[number],
     kwh: number
   ): number | null {
-    if (totalIncomeKwh <= 0) return null
+    if (!invoiceAmount || totalIncomeKwh <= 0) return null
     if (group.groupType === "COMMON") return null
 
-    const ownCost =
-      (kwh / totalIncomeKwh) * property.monthlyInvoiceAmount!
+    const ownCost = (kwh / totalIncomeKwh) * invoiceAmount
 
     let commonShare = 0
     if (commonCost > 0 && apartmentGroups.length > 0) {
@@ -221,7 +219,7 @@ export async function generateBillingRecord(propertyId: string) {
       billingPeriodEnd,
       billingClosingDay: property.billingClosingDay,
       totalConsumptionKwh: totalIncomeKwh,
-      monthlyInvoiceAmount: property.monthlyInvoiceAmount,
+      monthlyInvoiceAmount: invoiceAmount,
       commonAreaSplit: property.commonAreaSplit,
       items: { create: items },
     },

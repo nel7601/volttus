@@ -28,7 +28,7 @@ export interface BillingRecordData {
   billingPeriodEnd: string
   billingClosingDay: number
   totalConsumptionKwh: number
-  monthlyInvoiceAmount: number
+  monthlyInvoiceAmount: number | null
   commonAreaSplit: "EQUAL" | "PROPORTIONAL"
   createdAt: string
   items: BillingRecordItemData[]
@@ -225,18 +225,21 @@ export function BillingHistory({
 }
 
 function PeriodGroup({ record }: { record: BillingRecordData }) {
-  const [invoiceAmount, setInvoiceAmount] = useState(record.monthlyInvoiceAmount)
+  const [invoiceAmount, setInvoiceAmount] = useState(record.monthlyInvoiceAmount ?? 0)
   const [isPending, startTransition] = useTransition()
 
-  const toPayMap = recalcToPay(
-    record.items,
-    record.totalConsumptionKwh,
-    invoiceAmount,
-    record.commonAreaSplit
-  )
+  const toPayMap = invoiceAmount > 0
+    ? recalcToPay(
+        record.items,
+        record.totalConsumptionKwh,
+        invoiceAmount,
+        record.commonAreaSplit
+      )
+    : new Map<string, number>()
 
   function handleInvoiceBlur() {
-    if (invoiceAmount === record.monthlyInvoiceAmount) return
+    if (invoiceAmount === (record.monthlyInvoiceAmount ?? 0)) return
+    if (invoiceAmount <= 0) return
     startTransition(async () => {
       await updateBillingInvoice(record.id, invoiceAmount)
     })
@@ -266,7 +269,8 @@ function PeriodGroup({ record }: { record: BillingRecordData }) {
               type="number"
               step="0.01"
               min={0}
-              value={invoiceAmount}
+              value={invoiceAmount || ""}
+              placeholder="0.00"
               onChange={(e) => setInvoiceAmount(Number(e.target.value) || 0)}
               onBlur={handleInvoiceBlur}
               className={`w-[100px] h-7 text-right font-mono text-sm ${

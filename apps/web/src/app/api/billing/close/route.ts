@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
     where: {
       isActive: true,
       billingClosingDay: { not: null },
-      monthlyInvoiceAmount: { not: null },
     },
     select: {
       id: true,

@@ -290,7 +290,7 @@ model BillingRecord {
   billingPeriodEnd     DateTime        @map("billing_period_end")
   billingClosingDay    Int             @map("billing_closing_day")
   totalConsumptionKwh  Float           @map("total_consumption_kwh")
-  monthlyInvoiceAmount Float           @map("monthly_invoice_amount")
+  monthlyInvoiceAmount Float?          @map("monthly_invoice_amount")
   commonAreaSplit      CommonAreaSplit @map("common_area_split")
   createdAt            DateTime        @default(now()) @map("created_at")
 

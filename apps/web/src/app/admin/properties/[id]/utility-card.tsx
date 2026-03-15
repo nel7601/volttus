@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  createAlectraAccount,
+  saveAlectraAccount,
   deleteAlectraAccount,
 } from "@/actions/alectra-accounts"
 
@@ -49,29 +49,15 @@ export function UtilityCard({
 }) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [connectError, setConnectError] = useState<string | null>(null)
   const [isTesting, setIsTesting] = useState(false)
   const [testResult, setTestResult] = useState<TestResult | null>(null)
 
   const isConnected = !!alectraAccount
 
-  async function handleConnect(formData: FormData) {
-    setIsConnecting(true)
-    setConnectError(null)
-    try {
-      const result = await createAlectraAccount(formData)
-      if (!result.success) {
-        setConnectError(result.error ?? "Connection failed")
-        return
-      }
-      setIsEditing(false)
-      router.refresh()
-    } catch (err) {
-      setConnectError(err instanceof Error ? err.message : "Unknown error")
-    } finally {
-      setIsConnecting(false)
-    }
+  async function handleSave(formData: FormData) {
+    await saveAlectraAccount(formData)
+    setIsEditing(false)
+    router.refresh()
   }
 
   async function handleDisconnect() {
@@ -79,7 +65,6 @@ export function UtilityCard({
     await deleteAlectraAccount(alectraAccount.id)
     setIsEditing(false)
     setTestResult(null)
-    setConnectError(null)
     router.refresh()
   }
 
@@ -257,9 +242,9 @@ export function UtilityCard({
           </>
         )}
 
-        {/* Connection / Edit form */}
+        {/* Create / Edit form */}
         {(!isConnected || isEditing) && (
-          <form action={handleConnect} className="space-y-4">
+          <form action={handleSave} className="space-y-4">
             <input type="hidden" name="propertyId" value={propertyId} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -268,17 +253,11 @@ export function UtilityCard({
                   name="username"
                   defaultValue={isEditing ? alectraAccount?.username : ""}
                   required
-                  disabled={isConnecting}
                 />
               </div>
               <div className="space-y-1">
                 <Label>Password</Label>
-                <Input
-                  name="password"
-                  type="password"
-                  required
-                  disabled={isConnecting}
-                />
+                <Input name="password" type="password" required />
               </div>
               <div className="space-y-1">
                 <Label>Account Number</Label>
@@ -286,7 +265,6 @@ export function UtilityCard({
                   name="accountNumber"
                   defaultValue={isEditing ? alectraAccount?.accountNumber : ""}
                   required
-                  disabled={isConnecting}
                 />
               </div>
               <div className="space-y-1">
@@ -296,36 +274,19 @@ export function UtilityCard({
                   defaultValue={
                     isEditing ? alectraAccount?.meterNumber ?? "" : ""
                   }
-                  disabled={isConnecting}
                 />
               </div>
             </div>
-
-            {/* Connection error */}
-            {connectError && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-                {connectError}
-              </div>
-            )}
-
             <div className="flex items-center gap-2">
-              <Button type="submit" size="sm" disabled={isConnecting}>
-                {isConnecting
-                  ? "Verifying…"
-                  : isEditing
-                    ? "Update"
-                    : "Connect"}
+              <Button type="submit" size="sm">
+                {isEditing ? "Update" : "Save"}
               </Button>
               {isEditing && (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    setIsEditing(false)
-                    setConnectError(null)
-                  }}
-                  disabled={isConnecting}
+                  onClick={() => setIsEditing(false)}
                 >
                   Cancel
                 </Button>
@@ -334,11 +295,11 @@ export function UtilityCard({
           </form>
         )}
 
-        {/* Empty state hint */}
-        {!isConnected && !isConnecting && (
+        {/* Empty state */}
+        {!isConnected && (
           <p className="text-xs text-muted-foreground">
-            Connect your Alectra Utilities account to automatically read monthly
-            invoice amounts. Credentials will be verified before saving.
+            Enter your Alectra Utilities credentials. After saving, use
+            &quot;Test Connection&quot; to verify.
           </p>
         )}
       </CardContent>
